@@ -1736,7 +1736,15 @@ def create_app(oidc_blueprint=None):
     def get_auth_file():
         access_token = oidc_blueprint.session.token['access_token']
         auth_data = utils.getUserAuthData(access_token, cred, get_cred_id(), add_extra_auth=False)
-        buffer = io.BytesIO(auth_data.replace("\\n", "\n").encode())
+        # Remove \r from the auth_data
+        auth_data = auth_data.replace("\r", "")
+        # Replace \n by ##n@@ to avoid problems with the next replace operation
+        auth_data = auth_data.replace("\\\\n", "##n@@")
+        # Replace \\n by new lines
+        auth_data = auth_data.replace("\\n", "\n")
+        # Replace ##n@@ by \\n
+        auth_data = auth_data.replace("##n@@", "\\n")
+        buffer = io.BytesIO(auth_data.encode())
         return send_file(buffer, mimetype="text/plain", as_attachment=True, download_name="auth.dat")
 
     return app
