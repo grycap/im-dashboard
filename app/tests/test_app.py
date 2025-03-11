@@ -926,3 +926,14 @@ class IMDashboardTests(unittest.TestCase):
         self.assertEqual(200, res.status_code)
         self.assertIn(b'<input type="text" class="form-control" id="param1"', res.data)
         self.assertIn(b'<input type="hidden" name="reconfigure_template"', res.data)
+
+    @patch("app.utils.getUserAuthData")
+    @patch("app.utils.avatar")
+    def test_auth_file(self, avatar, user_data):
+        user_data.return_value = ("type = InfrastructureManager; token = access_token\\n" +
+                                  "id = test; username = test; password = some\\\\npassword")
+        self.login(avatar)
+        res = self.client.get('/auth_file')
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(b'type = InfrastructureManager; token = access_token\n' +
+                         b'id = test; username = test; password = some\\npassword', res.data)
