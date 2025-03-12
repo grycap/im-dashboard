@@ -488,9 +488,9 @@ function changeUnit(obj) {
   var unit = obj.value;
   var value = obj.previousElementSibling.value;
   if (unit == "GB") {
-    obj.previousElementSibling.value = value / 1.048576;
+    obj.previousElementSibling.value = value / 1073741824.0 * 1000000000.0;
   } else {
-    obj.previousElementSibling.value = value * 1.048576;
+    obj.previousElementSibling.value = value / 1000000000.0 * 1073741824.0;
   }
 }
 
