@@ -53,7 +53,6 @@ def get_sites(vo=None):
     cloudinfo_url = "/sites/"
     if vo:
         cloudinfo_url += f"?vo_name={vo}"
-
     endpoints = {}
     data = cloudinfo_call(cloudinfo_url)
     for site in data:
@@ -62,15 +61,11 @@ def get_sites(vo=None):
 
 
 def get_images(site_id, vo):
-    oss = []
-
     cloudinfo_url = f"/site/{site_id}/{vo}/images"
-
     images = set()
     data = cloudinfo_call(cloudinfo_url)
     if data:
         images = set([(img["name"], img["appdb_id"]) for img in data])
-
     return list(images)
 
 
