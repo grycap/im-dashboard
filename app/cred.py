@@ -69,6 +69,11 @@ class Credentials:
                         return 2, ("This site has already a Credential with the same EU Node site." +
                                    " This may cause problems authenticating with the site." +
                                    " Please disable/remove one of the credentials.")
+                elif new_cred["type"] == "Chameleon":
+                    if new_cred["node"] == cred["node"]:
+                        return 2, ("This site has already a Credential with the same Chameleon site." +
+                                   " This may cause problems authenticating with the site." +
+                                   " Please disable/remove one of the credentials.")
                 elif new_cred["type"] in no_host_types:
                     return 2, ("There is already a set of " + new_cred["type"] + " credentials. " +
                                " This may cause problems authenticating with the Cloud provider." +
