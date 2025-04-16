@@ -88,7 +88,7 @@
             loadImages();
             loadSiteImages();
             loadSiteInfo();
-        } else if (cred_type == 'OpenStack' || cred_type == 'CH'|| cred_type == 'EUNode') {
+        } else if (cred_type == 'OpenStack' || cred_type == 'CH'|| cred_type == 'EUNode' || cred_type == 'Chameleon') {
             $('#cloudImages').hide();
             $('#fedcloudImages').hide();
             $('#siteImages').show();
@@ -121,7 +121,7 @@
             } else {
                 document.getElementById('imageID').setAttribute("placeholder", "Image ID");
             }
-            if (cred_type == 'OSCAR' || cred_type == 'Kubernetes' || cred_type == 'EUNodeCont') {
+            if (cred_type == 'OSCAR' || cred_type == 'Kubernetes' || cred_type == 'EUNodeCont' || cred_type == 'Chameleon') {
                 // OSCAR or K8s do not set images
                 $('#cloudImages').hide();
                 activateSubmit();
