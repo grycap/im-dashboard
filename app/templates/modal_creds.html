@@ -334,6 +334,32 @@
           <div class="col">
           </div>
         </div>
+{% elif cred_type == "Chameleon" %}
+        <div class="row form-group">
+          <div class="col">
+              <input placeholder="ID" name="username" class="col-sm-12 form-control my-1" type="text" id="username" value="{{ creds['username'] if creds else '' }}" required/>
+          </div>
+          <div class="col">
+              <input placeholder="Secret" name="password" class="col-sm-12 form-control my-1" type="password" id="password"/>
+          </div>
+        </div>
+        <div class="row form-group">
+          <div class="col">
+              <input placeholder="Project ID" name="tenant" class="col-sm-12 form-control my-1" type="text" id="tenant" value="{{ creds['tenant'] if creds else '' }}" required/>
+          </div>
+          <div class="col">
+            <select class="js-example-basic-single js-states form-control" id="node" name="node" required>
+              <option name="node" value="">-- Set Chameleon Site --</option>
+              <option name="node" value="CHI@TACC" {{ "selected" if creds and creds['node'] == "CHI@TACC" else '' }}>CHI@TACC</option>
+              <option name="node" value="CHI@UC" {{ "selected" if creds and creds['node'] == "CHI@UC" else '' }}>CHI@UC</option>
+              <option name="node" value="CHI@NU" {{ "selected" if creds and creds['node'] == "CHI@NU" else '' }}>CHI@NU</option>
+              <option name="node" value="CHI@NCAR" {{ "selected" if creds and creds['node'] == "CHI@NCAR" else '' }}>CHI@NCAR</option>
+              <option name="node" value="CHI@EVL" {{ "selected" if creds and creds['node'] == "CHI@EVL" else '' }}>CHI@EVL</option>
+              <option name="node" value="KVM@TACC" {{ "selected" if creds and creds['node'] == "KVM@TACC" else '' }}>KVM@TACC</option>
+              <option name="node" value="CHI@NRP" {{ "selected" if creds and creds['node'] == "CHI@NRP" else '' }}>CHI@NRP</option>
+            </select>
+          </div>
+        </div>
 {% else %}
 
 

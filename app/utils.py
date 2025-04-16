@@ -225,6 +225,14 @@ def getUserAuthData(access_token, cred, userid, cred_id=None, full=False, add_ex
                                                                          cred['tenant'],
                                                                          cred['password'])
                 res += "; tenant_id = %s;" % cred["tenant"]
+            elif cred['type'] == "Chameleon":
+                # Add the Chameleon provider as OpenStack
+                res += "; type = OpenStack; auth_version = 3.x_appcred;"
+                res += " host = https://%s.chameleoncloud.org:5000;" % cred['node'].replace("@", ".").lower()
+                res += " username = %s; tenant = %s; password = '%s'; service_region = %s" % (cred['username'],
+                                                                                              cred['tenant'],
+                                                                                              cred['password'],
+                                                                                              cred['node'])
             elif cred['type'] == "CH":
                 # Add the Cloud&Heat provider as OpenStack
                 res += "; type = OpenStack; auth_version = 3.x_password;"
