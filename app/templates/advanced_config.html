@@ -167,50 +167,53 @@
    }
 
    function loadSiteInfo() {
-        $('#divLoadingUsage').show();
-        $.ajax({
-            method: "GET",
-            url: "{{ url_for('home') }}usage/" + $("#selectedCred").val(),
-            success : function(text)
-            {
-                data = JSON.parse(text);
+       $('#divLoadingUsage').show();
+       var formData = $("#depSubmit").serialize(); // Serialize all form data
+       $.ajax({
+               method: "GET",
+               url: "{{ url_for('home') }}usage/" + $("#selectedCred").val() + "?template={{ selectedTemplate }}",
+               data: formData, // Send serialized form data
+               success : function(text)
+               {
+                   data = JSON.parse(text);
+                   quotas = data["quotas"]
+                   resources = data["resources"]
 
-                for (var i = 0; i < resource_types.length; i++) {
-                    if (data[resource_types[i]]["limit"] <= 0) {
-                        // -1 value means no limit, set a big value
-                        data[resource_types[i]]["limit"] = 10000;
-                    }
-                    config[resource_types[i]].data = {
-                        labels: [
-                        'Used',
-                        'Free'
-                        ],
-                        datasets: [{
-                            data: [Math.round(data[resource_types[i]]["used"]),
-                                    Math.round(data[resource_types[i]]["limit"] - data[resource_types[i]]["used"])],
-                            backgroundColor: [
-                                window.chartColors.green,
-                                window.chartColors.grey
-                            ]
-                        }]
-                    };
-                    var usage = data[resource_types[i]]["used"] / data[resource_types[i]]["limit"];
-                    if (usage >= 0.7 && usage < 0.9) {
-                        config[resource_types[i]].data.datasets[0].backgroundColor[0] = window.chartColors.orange;
-                    } else if (usage >= 0.9) {
-                        config[resource_types[i]].data.datasets[0].backgroundColor[0] = window.chartColors.red;
-                    }
-                    window.myPies[resource_types[i]].update();
-                }
-                $('#divLoadingUsage').hide();
-            },
-            error : function(error)
-            {
-                $('#divLoadingUsage').hide();
-                resetPies();
-                alert(error.responseText);
-            }
-        });
+                   // TODO: show the resources in the pie chart
+
+                   for (var i = 0; i < resource_types.length; i++) {
+                       if (quotas[resource_types[i]]["limit"] <= 0) {
+                               // -1 value means no limit, set a big value
+                               quotas[resource_types[i]]["limit"] = 10000;
+                       }
+                       config[resource_types[i]].data = {
+                               labels: ['Used', 'Deploy', 'Free'],
+                               datasets: [{
+                                   data: [Math.round(quotas[resource_types[i]]["used"]),
+                                          Math.round(quotas[resource_types[i]]["limit"] - quotas[resource_types[i]]["used"])],
+                                   backgroundColor: [
+                                       window.chartColors.green,
+                                       window.chartColors.grey
+                                   ]
+                               }]
+                       };
+                       var usage = quotas[resource_types[i]]["used"] / quotas[resource_types[i]]["limit"];
+                       if (usage >= 0.7 && usage < 0.9) {
+                               config[resource_types[i]].data.datasets[0].backgroundColor[0] = window.chartColors.orange;
+                       } else if (usage >= 0.9) {
+                               config[resource_types[i]].data.datasets[0].backgroundColor[0] = window.chartColors.red;
+                       }
+                       window.myPies[resource_types[i]].update();
+                   }
+                   $('#divLoadingUsage').hide();
+               },
+               error : function(error)
+               {
+                   $('#divLoadingUsage').hide();
+                   resetPies();
+                   alert(error.responseText);
+               }
+       });
    }
 
    function selectedSiteImageChanged() {
