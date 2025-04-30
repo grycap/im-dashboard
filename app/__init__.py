@@ -844,11 +844,30 @@ def create_app(oidc_blueprint=None):
     def getusage(cred_id=None):
         access_token = oidc_blueprint.session.token['access_token']
         auth_data = utils.getUserAuthData(access_token, cred, get_cred_id(), cred_id)
+
+        inputs = {k: v for (k, v) in request.args.items()
+                  if not k.startswith("extra_opts.") and k not in ["csrf_token", "infra_name"]}
+
+        with io.open(settings.toscaDir + request.args.get('template')) as stream:
+            template = yaml.full_load(stream)
+        template = set_inputs_to_template(template, inputs)
+        payload = yaml.dump(template, default_flow_style=False, sort_keys=False)
+        res = {}
+
+        try:
+            response = im.get_resources(payload, auth_data)
+            if not response.ok:
+                raise Exception(response.text)
+            res["resources"] = response.json()
+        except Exception as ex:
+            app.logger.exception("Error getting resources: %s" % ex)
+
         try:
             response = im.get_cloud_quotas(cred_id, auth_data)
             if not response.ok:
                 raise Exception(response.text)
-            return json.dumps(response.json()["quotas"])
+            res["quotas"] = response.json()["quotas"]
+            return json.dumps(res)
         except Exception as ex:
             return "Error loading site quotas: %s!" % str(ex), 400
 
