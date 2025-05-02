@@ -63,6 +63,12 @@
    };
 
    function resetPies() {
+       // reset the title of the pies as it may be changed
+       window.myPies["ram"].options.plugins.title.text = "RAM (GB)"
+       window.myPies["instances"].options.plugins.title.text = "Instances"
+       window.myPies["floating_ips"].options.plugins.title.text = "Float IPs"
+       window.myPies["security_groups"].options.plugins.title.text = "SGs"
+
        for (var i = 0; i < resource_types.length; i++) {
            config[resource_types[i]].data = {
                labels: ['Unknown'],
@@ -80,7 +86,14 @@
    function changedCred() {
         var select = document.getElementById('selectedCred');
         var cred_type = select.options[select.selectedIndex].getAttribute("data-type");
-        if (cred_type == 'fedcloud') {
+        if (cred_type == null) {
+            // no cloud provider selected, hide everything
+            $('#cloudImages').hide();
+            $('#fedcloudImages').hide();
+            $('#siteImages').hide();
+            $('#fedcloudUsage').hide();
+            return;
+        } else if (cred_type == 'fedcloud') {
             $('#cloudImages').hide();
             $('#fedcloudImages').show();
             $('#siteImages').show();
@@ -167,6 +180,7 @@
    }
 
    function loadSiteInfo() {
+       resetPies();
        $('#divLoadingUsage').show();
        var formData = $("#depSubmit").serialize(); // Serialize all form data
        $.ajax({
@@ -175,6 +189,7 @@
                data: formData, // Send serialized form data
                success : function(text)
                {
+                   var enough = true;
                    quotas = JSON.parse(text);
 
                    // TODO: show the resources in the pie chart
@@ -184,29 +199,33 @@
                                // -1 value means no limit, set a big value
                                quotas[resource_types[i]]["limit"] = 10000;
                        }
-                       free = Math.round(quotas[resource_types[i]]["limit"] - quotas[resource_types[i]]["used"] - quotas[resource_types[i]]["touse"])
+                       var free = Math.round(quotas[resource_types[i]]["limit"] - quotas[resource_types[i]]["used"] - quotas[resource_types[i]]["touse"])
                        if (free < 0) free = 0;
+                       var used = Math.round(quotas[resource_types[i]]["used"]);
+                       var deploy = Math.round(quotas[resource_types[i]]["touse"]);
                        config[resource_types[i]].data = {
                                labels: ['Used', 'Deploy', 'Free'],
                                datasets: [{
-                                   data: [Math.round(quotas[resource_types[i]]["used"]),
-                                          Math.round(quotas[resource_types[i]]["touse"]),
-                                          free],
+                                   data: [used, deploy, free],
                                    backgroundColor: [
                                        window.chartColors.orange,
-                                       window.chartColors.purple,
+                                       window.chartColors.blue,
                                        window.chartColors.grey
                                    ]
                                }]
                        };
                        var free = quotas[resource_types[i]]["limit"] - quotas[resource_types[i]]["used"] - quotas[resource_types[i]]["touse"];
                        if (free <= 0) {
-                               config[resource_types[i]].data.datasets[0].backgroundColor[1] = window.chartColors.red;
-                               window.myPies[resource_types[i]].options.plugins.title.text = '⚠ ' + window.myPies[resource_types[i]].options.plugins.title.text + ' ⚠';
+                            enough = false;
+                            config[resource_types[i]].data.datasets[0].backgroundColor[1] = window.chartColors.red;
+                            window.myPies[resource_types[i]].options.plugins.title.text = '⚠ ' + window.myPies[resource_types[i]].options.plugins.title.text + ' ⚠';
                        }
                        window.myPies[resource_types[i]].update();
                    }
                    $('#divLoadingUsage').hide();
+                   if (!enough) {
+                       $('#outOfResources').modal('show');
+                   }
                },
                error : function(error)
                {
@@ -247,6 +266,24 @@
 
   <div id="manschedConf">
       <p></p>
+
+    <!-- Modal Out of resources -->
+    <div class="modal fade" id="outOfResources" role="dialog">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+            <h5 class="modal-title" id="outOfResources"><span class="fas fa-exclamation-triangle"></span> Not enough resources</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+            <p>Not enough resources to deploy this template. Please change the template or the cloud provider.</p>
+            </div>
+            <div class="modal-footer">
+            <a class="btn btn-primary cancelBtn" role="button" data-bs-dismiss="modal">Close</a>
+            </div>
+        </div>
+        </div>
+    </div>
 
       <div class="row">
        <div class="col-md-6">
