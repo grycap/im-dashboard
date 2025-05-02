@@ -198,3 +198,8 @@ class InfrastructureManager():
         response = requests.put(url, headers=headers, timeout=self.timeout, data=data)
         response.raise_for_status()
         return response.text
+
+    def get_resources(self, payload, auth_data):
+        headers = {"Authorization": auth_data, "Content-Type": "text/yaml"}
+        url = "%s/infrastructures?dry_run=1" % self.im_url
+        return requests.post(url, headers=headers, data=payload, timeout=self.timeout)

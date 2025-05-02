@@ -32,7 +32,7 @@
            responsive: false,
            plugins: {
                 legend: {
-                    display: false
+                    display: false,
                 },
                 title: {
                     display: true,
@@ -43,7 +43,7 @@
        }
    };
 
-   var resource_types = ["cores", "ram", "instances", "floating_ips", "security_groups"];
+   var resource_types = ["cores", "ram", "instances", "floating_ips", "security_groups", "volume_storage"];
 
    for (var i = 0; i < resource_types.length; i++) {
        config[resource_types[i]] = JSON.parse(JSON.stringify(config["gen"]));;    
@@ -53,6 +53,7 @@
    config["instances"].options.plugins.title.text = "Instances"
    config["floating_ips"].options.plugins.title.text = "Float IPs"
    config["security_groups"].options.plugins.title.text = "SGs"
+   config["volume_storage"].options.plugins.title.text = "Staorage (GB)"
 
    window.onload = function() {
        window.myPies = {};
@@ -63,6 +64,13 @@
    };
 
    function resetPies() {
+       // reset the title of the pies as it may be changed
+       window.myPies["ram"].options.plugins.title.text = "RAM (GB)"
+       window.myPies["instances"].options.plugins.title.text = "Instances"
+       window.myPies["floating_ips"].options.plugins.title.text = "Float IPs"
+       window.myPies["security_groups"].options.plugins.title.text = "SGs"
+       window.myPies["volume_storage"].options.plugins.title.text = "Storage (GB)"
+
        for (var i = 0; i < resource_types.length; i++) {
            config[resource_types[i]].data = {
                labels: ['Unknown'],
@@ -80,7 +88,14 @@
    function changedCred() {
         var select = document.getElementById('selectedCred');
         var cred_type = select.options[select.selectedIndex].getAttribute("data-type");
-        if (cred_type == 'fedcloud') {
+        if (cred_type == null) {
+            // no cloud provider selected, hide everything
+            $('#cloudImages').hide();
+            $('#fedcloudImages').hide();
+            $('#siteImages').hide();
+            $('#fedcloudUsage').hide();
+            return;
+        } else if (cred_type == 'fedcloud') {
             $('#cloudImages').hide();
             $('#fedcloudImages').show();
             $('#siteImages').show();
@@ -167,50 +182,60 @@
    }
 
    function loadSiteInfo() {
-        $('#divLoadingUsage').show();
-        $.ajax({
-            method: "GET",
-            url: "{{ url_for('home') }}usage/" + $("#selectedCred").val(),
-            success : function(text)
-            {
-                data = JSON.parse(text);
+       resetPies();
+       $('#divLoadingUsage').show();
+       var formData = $("#depSubmit").serialize(); // Serialize all form data
+       $.ajax({
+               method: "GET",
+               url: "{{ url_for('home') }}usage/" + $("#selectedCred").val() + "?template={{ selectedTemplate }}",
+               data: formData, // Send serialized form data
+               success : function(text)
+               {
+                   var enough = true;
+                   quotas = JSON.parse(text);
 
-                for (var i = 0; i < resource_types.length; i++) {
-                    if (data[resource_types[i]]["limit"] <= 0) {
-                        // -1 value means no limit, set a big value
-                        data[resource_types[i]]["limit"] = 10000;
-                    }
-                    config[resource_types[i]].data = {
-                        labels: [
-                        'Used',
-                        'Free'
-                        ],
-                        datasets: [{
-                            data: [Math.round(data[resource_types[i]]["used"]),
-                                    Math.round(data[resource_types[i]]["limit"] - data[resource_types[i]]["used"])],
-                            backgroundColor: [
-                                window.chartColors.green,
-                                window.chartColors.grey
-                            ]
-                        }]
-                    };
-                    var usage = data[resource_types[i]]["used"] / data[resource_types[i]]["limit"];
-                    if (usage >= 0.7 && usage < 0.9) {
-                        config[resource_types[i]].data.datasets[0].backgroundColor[0] = window.chartColors.orange;
-                    } else if (usage >= 0.9) {
-                        config[resource_types[i]].data.datasets[0].backgroundColor[0] = window.chartColors.red;
-                    }
-                    window.myPies[resource_types[i]].update();
-                }
-                $('#divLoadingUsage').hide();
-            },
-            error : function(error)
-            {
-                $('#divLoadingUsage').hide();
-                resetPies();
-                alert(error.responseText);
-            }
-        });
+                   // TODO: show the resources in the pie chart
+
+                   for (var i = 0; i < resource_types.length; i++) {
+                       if (quotas[resource_types[i]]["limit"] <= 0) {
+                               // -1 value means no limit, set a big value
+                               quotas[resource_types[i]]["limit"] = 10000;
+                       }
+                       var free = Math.round(quotas[resource_types[i]]["limit"] - quotas[resource_types[i]]["used"] - quotas[resource_types[i]]["touse"])
+                       if (free < 0) free = 0;
+                       var used = Math.round(quotas[resource_types[i]]["used"]);
+                       var deploy = Math.round(quotas[resource_types[i]]["touse"]);
+                       config[resource_types[i]].data = {
+                               labels: ['Used', 'Deploy', 'Free'],
+                               datasets: [{
+                                   data: [used, deploy, free],
+                                   backgroundColor: [
+                                       window.chartColors.orange,
+                                       window.chartColors.green,
+                                       window.chartColors.grey
+                                   ]
+                               }]
+                       };
+                       var free = quotas[resource_types[i]]["limit"] - quotas[resource_types[i]]["used"] - quotas[resource_types[i]]["touse"];
+                       if (free <= 0) {
+                            enough = false;
+                            config[resource_types[i]].data.datasets[0].backgroundColor[1] = window.chartColors.red;
+                            window.myPies[resource_types[i]].options.plugins.title.text = '⚠ ' + window.myPies[resource_types[i]].options.plugins.title.text + ' ⚠';
+                       }
+                       window.myPies[resource_types[i]].update();
+                   }
+                   $('#divLoadingUsage').hide();
+                   if (!enough) {
+                       $('#outOfResources').modal('show');
+                   }
+               },
+               error : function(error)
+               {
+                   $('#divLoadingUsage').hide();
+                   resetPies();
+                   alert(error.responseText);
+               }
+       });
    }
 
    function selectedSiteImageChanged() {
@@ -244,8 +269,26 @@
   <div id="manschedConf">
       <p></p>
 
+    <!-- Modal Out of resources -->
+    <div class="modal fade" id="outOfResources" role="dialog">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+            <h5 class="modal-title" id="outOfResources"><span class="fas fa-exclamation-triangle"></span> Not enough resources</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+            <p>Not enough resources to deploy this template. Please change the template or the cloud provider.</p>
+            </div>
+            <div class="modal-footer">
+            <a class="btn btn-primary cancelBtn" role="button" data-bs-dismiss="modal">Close</a>
+            </div>
+        </div>
+        </div>
+    </div>
+
       <div class="row">
-       <div class="col-md-6">
+       <div class="col-md-5">
 
            <div>
                <label>Select Cloud Provider:</label>
@@ -283,28 +326,31 @@
            </div>
 
        </div>
-       <div class="col-md-6">
+       <div class="col-md-7">
 
            <div id="fedcloudUsage" style="display: none;">
                <label>Site Resource Usage:</label>
                <div id="divLoadingUsage" style="display: none; position: absolute; margin-left: 40px; margin-top: 30px; padding:10px; background-color:white; z-index: 3;">
                    Loading Site Resource Usage Data <span class='spinner-grow spinner-grow-sm'></span>
                </div>
-               <div class="row ms-2">
+               <div class="row ms-2 me-2">
                    <div class="col-md-2">
-                       <canvas id="chart-area-cores" width="100px" height="100px"></canvas>
+                       <canvas id="chart-area-cores" width="110px" height="110px"></canvas>
                    </div>
                    <div class="col-md-2">
-                       <canvas id="chart-area-ram" width="100px" height="100px"></canvas>
+                       <canvas id="chart-area-ram" width="110px" height="110px"></canvas>
                    </div>
                    <div class="col-md-2">
-                       <canvas id="chart-area-instances" width="100px" height="100px"></canvas>
+                       <canvas id="chart-area-instances" width="110px" height="110px"></canvas>
                    </div>
                    <div class="col-md-2">
-                       <canvas id="chart-area-floating_ips" width="100px" height="100px"></canvas>
+                       <canvas id="chart-area-volume_storage" width="110px" height="110px"></canvas>
                    </div>
                    <div class="col-md-2">
-                       <canvas id="chart-area-security_groups" width="100px" height="100px"></canvas>
+                       <canvas id="chart-area-floating_ips" width="110px" height="110px"></canvas>
+                   </div>
+                   <div class="col-md-2">
+                       <canvas id="chart-area-security_groups" width="110px" height="110px"></canvas>
                    </div>
                </div>
            </div>
