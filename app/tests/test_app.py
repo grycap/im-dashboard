@@ -31,6 +31,7 @@ class IMDashboardTests(unittest.TestCase):
         resp.ok = False
 
         if url == "/im/infrastructures":
+            print(params)
             resp.ok = True
             resp.status_code = 200
             resp.json.return_value = {"uri-list": [{"uri": "http://server.com/im/infrastructures/infid"}]}
@@ -112,7 +113,9 @@ class IMDashboardTests(unittest.TestCase):
                                                  "ram": {"used": 1, "limit": 10},
                                                  "instances": {"used": 1, "limit": 10},
                                                  "floating_ips": {"used": 1, "limit": 10},
-                                                 "security_groups": {"used": 1, "limit": 10}}}
+                                                 "security_groups": {"used": 1, "limit": 10},
+                                                 "volumes": {"used": 1, "limit": 10},
+                                                 "volume_storage": {"used": 1, "limit": 10}}}
         elif url == "/im/stats":
             resp.ok = True
             resp.status_code = 200
@@ -191,11 +194,35 @@ class IMDashboardTests(unittest.TestCase):
         resp = MagicMock()
         parts = urlparse(url)
         url = parts[2]
+        query = parts[4]
 
         resp.status_code = 404
         resp.ok = False
 
-        if url == "/im/infrastructures":
+        if url == "/im/infrastructures" and "dry_run=1" in query:
+            resp.ok = True
+            resp.status_code = 200
+            resp.json.return_value = {
+                "ost1": {
+                    "cloudType": "OpenStack",
+                    "cloudEndpoint": "http://openstack.example.com:5000",
+                    "compute": [
+                        {
+                            "cpuCores": 2,
+                            "memoryInMegabytes": 4096,
+                            "diskSizeInGigabytes": 20,
+                            "publicIP": 1,
+                        },
+                        {
+                            "cpuCores": 1,
+                            "memoryInMegabytes": 2048,
+                            "diskSizeInGigabytes": 10,
+                        },
+                    ],
+                    "storage": [{"sizeInGigabytes": 100}],
+                }
+            }
+        elif url == "/im/infrastructures":
             resp.ok = True
             resp.status_code = 200
             self.assertTrue("IMAGE_NAME" in kwargs["data"] or "appdbimage" in kwargs["data"])
@@ -208,6 +235,7 @@ class IMDashboardTests(unittest.TestCase):
             resp.ok = True
             resp.status_code = 200
             resp.text = ""
+
 
         return resp
 
@@ -664,19 +692,24 @@ class IMDashboardTests(unittest.TestCase):
     @patch("app.utils.avatar")
     @patch("app.utils.getUserAuthData")
     @patch('requests.get')
-    def test_quotas(self, get, user_data, avatar):
+    @patch('requests.post')
+    def test_quotas(self, post, get, user_data, avatar):
         user_data.return_value = "type = InfrastructureManager; token = access_token"
         get.side_effect = self.get_response
+        post.side_effect = self.post_response
+
         self.login(avatar)
 
-        res = self.client.get('/usage/credid')
+        res = self.client.get('/usage/credid?template=simple-node-disk.yml')
         self.assertEqual(200, res.status_code)
-        expected_res = {"cores": {"used": 1, "limit": 10},
-                        "ram": {"used": 1, "limit": 10},
-                        "instances": {"used": 1, "limit": 10},
-                        "floating_ips": {"used": 1, "limit": 10},
-                        "security_groups": {"used": 1, "limit": 10}}
-        self.assertEquals(expected_res, json.loads(res.data))
+        expected_res = {"cores": {"used": 1, "limit": 10, "touse": 3},
+                        "ram": {"used": 1, "limit": 10, "touse": 6},
+                        "instances": {"used": 1, "limit": 10, "touse": 2},
+                        "floating_ips": {"used": 1, "limit": 10, "touse": 1},
+                        "security_groups": {"used": 1, "limit": 10, "touse": 3},
+                        "volumes": {"used": 1, "limit": 10, "touse": 1},
+                        "volume_storage": {"used": 1, "limit": 10, "touse": 100}}
+        self.assertEqual(expected_res, json.loads(res.data))
 
     @patch("app.utils.avatar")
     @patch("app.utils.getIMUserAuthData")
