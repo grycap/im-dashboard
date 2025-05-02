@@ -852,24 +852,56 @@ def create_app(oidc_blueprint=None):
             template = yaml.full_load(stream)
         template = set_inputs_to_template(template, inputs)
         payload = yaml.dump(template, default_flow_style=False, sort_keys=False)
-        res = {}
+
+        quotas = {}
+        try:
+            response = im.get_cloud_quotas(cred_id, auth_data)
+            if not response.ok:
+                raise Exception(response.text)
+            quotas = response.json()["quotas"]
+        except Exception as ex:
+            return "Error loading site quotas: %s!" % str(ex), 400
 
         try:
             response = im.get_resources(payload, auth_data)
             if not response.ok:
                 raise Exception(response.text)
-            res["resources"] = response.json()
+            resources = response.json()
+            res_item = next(iter(resources.values()))
+            # Initialize totals
+            totals = {
+                "cores": 0,
+                "ram": 0,
+                "instances": 0,
+                "floating_ips": 0,
+                "volumes": 0,
+                "volume_storage": 0,
+                "security_groups": 3  # default IM value per infrastructure
+            }
+
+            # Compute totals for VMs
+            for vm in res_item.get("compute", []):
+                totals["instances"] += 1
+                totals["cores"] += vm.get("cpuCores", 0)
+                totals["ram"] += vm.get("memoryInMegabytes", 0)
+                totals["floating_ips"] += vm.get("publicIP", 0)
+
+            totals["ram"] = totals["ram"] / 1024.0  # Convert to GiB
+
+            # Compute totals for storage
+            for disk in res_item.get("storage", []):
+                totals["volumes"] += 1
+                totals["volume_storage"] += disk.get("sizeInGigabytes", 0)
+
+            # Update quotas with computed totals
+            for key, value in totals.items():
+                if key not in quotas:
+                    quotas[key] = {}
+                quotas[key]["touse"] = value
         except Exception as ex:
             app.logger.exception("Error getting resources: %s" % ex)
 
-        try:
-            response = im.get_cloud_quotas(cred_id, auth_data)
-            if not response.ok:
-                raise Exception(response.text)
-            res["quotas"] = response.json()["quotas"]
-            return json.dumps(res)
-        except Exception as ex:
-            return "Error loading site quotas: %s!" % str(ex), 400
+        return json.dumps(quotas)
 
     @app.route('/secret/<path>')
     def secret(path=None):
