@@ -32,7 +32,7 @@
            responsive: false,
            plugins: {
                 legend: {
-                    display: false
+                    display: false,
                 },
                 title: {
                     display: true,
@@ -175,9 +175,7 @@
                data: formData, // Send serialized form data
                success : function(text)
                {
-                   data = JSON.parse(text);
-                   quotas = data["quotas"]
-                   resources = data["resources"]
+                   quotas = JSON.parse(text);
 
                    // TODO: show the resources in the pie chart
 
@@ -186,22 +184,25 @@
                                // -1 value means no limit, set a big value
                                quotas[resource_types[i]]["limit"] = 10000;
                        }
+                       free = Math.round(quotas[resource_types[i]]["limit"] - quotas[resource_types[i]]["used"] - quotas[resource_types[i]]["touse"])
+                       if (free < 0) free = 0;
                        config[resource_types[i]].data = {
                                labels: ['Used', 'Deploy', 'Free'],
                                datasets: [{
                                    data: [Math.round(quotas[resource_types[i]]["used"]),
-                                          Math.round(quotas[resource_types[i]]["limit"] - quotas[resource_types[i]]["used"])],
+                                          Math.round(quotas[resource_types[i]]["touse"]),
+                                          free],
                                    backgroundColor: [
-                                       window.chartColors.green,
+                                       window.chartColors.orange,
+                                       window.chartColors.purple,
                                        window.chartColors.grey
                                    ]
                                }]
                        };
-                       var usage = quotas[resource_types[i]]["used"] / quotas[resource_types[i]]["limit"];
-                       if (usage >= 0.7 && usage < 0.9) {
-                               config[resource_types[i]].data.datasets[0].backgroundColor[0] = window.chartColors.orange;
-                       } else if (usage >= 0.9) {
-                               config[resource_types[i]].data.datasets[0].backgroundColor[0] = window.chartColors.red;
+                       var free = quotas[resource_types[i]]["limit"] - quotas[resource_types[i]]["used"] - quotas[resource_types[i]]["touse"];
+                       if (free <= 0) {
+                               config[resource_types[i]].data.datasets[0].backgroundColor[1] = window.chartColors.red;
+                               window.myPies[resource_types[i]].options.plugins.title.text = '⚠ ' + window.myPies[resource_types[i]].options.plugins.title.text + ' ⚠';
                        }
                        window.myPies[resource_types[i]].update();
                    }
