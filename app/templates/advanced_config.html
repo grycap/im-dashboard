@@ -49,6 +49,7 @@
        config[resource_types[i]] = JSON.parse(JSON.stringify(config["gen"]));;    
    }
 
+   config["cores"].options.plugins.title.text = "VCPUs"
    config["ram"].options.plugins.title.text = "RAM (GB)"
    config["instances"].options.plugins.title.text = "Instances"
    config["floating_ips"].options.plugins.title.text = "Float IPs"
@@ -65,6 +66,7 @@
 
    function resetPies() {
        // reset the title of the pies as it may be changed
+       window.myPies["cores"].options.plugins.title.text = "VCPUs"
        window.myPies["ram"].options.plugins.title.text = "RAM (GB)"
        window.myPies["instances"].options.plugins.title.text = "Instances"
        window.myPies["floating_ips"].options.plugins.title.text = "Float IPs"
