@@ -236,7 +236,6 @@ class IMDashboardTests(unittest.TestCase):
             resp.status_code = 200
             resp.text = ""
 
-
         return resp
 
     def login(self, avatar):
