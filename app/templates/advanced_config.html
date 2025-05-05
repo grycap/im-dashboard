@@ -204,26 +204,33 @@
                                quotas[resource_types[i]]["limit"] = 10000;
                        }
                        var free = Math.round(quotas[resource_types[i]]["limit"] - quotas[resource_types[i]]["used"] - quotas[resource_types[i]]["touse"])
-                       if (free < 0) free = 0;
                        var used = Math.round(quotas[resource_types[i]]["used"]);
                        var deploy = Math.round(quotas[resource_types[i]]["touse"]);
+                       // there are not enough free resources
+                       var free_color = window.chartColors.grey;
+                       var used_color = window.chartColors.orange;
+                       var deploy_color = window.chartColors.green;
+                       var used_label = "Used";
+                       var deploy_label = "Deploy";
+                       var free_label = "Free";
+                       if (free < 0) {
+                           // not enough resources
+                           deploy = deploy + free;
+                           free = Math.abs(free);
+                           deploy_label = "Deploy (fit)";
+                           free_label = "Deploy (over)";
+                           free_color = window.chartColors.brightred;
+                           deploy_color = window.chartColors.red;
+                           enough = false;
+                           window.myPies[resource_types[i]].options.plugins.title.text = '⚠ ' + window.myPies[resource_types[i]].options.plugins.title.text + ' ⚠';
+                       }
                        config[resource_types[i]].data = {
-                               labels: ['Used', 'Deploy', 'Free'],
+                               labels: [used_label, deploy_label, free_label],
                                datasets: [{
                                    data: [used, deploy, free],
-                                   backgroundColor: [
-                                       window.chartColors.orange,
-                                       window.chartColors.green,
-                                       window.chartColors.grey
-                                   ]
+                                   backgroundColor: [used_color, deploy_color, free_color]
                                }]
                        };
-                       var free = quotas[resource_types[i]]["limit"] - quotas[resource_types[i]]["used"] - quotas[resource_types[i]]["touse"];
-                       if (free <= 0) {
-                            enough = false;
-                            config[resource_types[i]].data.datasets[0].backgroundColor[1] = window.chartColors.red;
-                            window.myPies[resource_types[i]].options.plugins.title.text = '⚠ ' + window.myPies[resource_types[i]].options.plugins.title.text + ' ⚠';
-                       }
                        window.myPies[resource_types[i]].update();
                    }
                    $('#divLoadingUsage').hide();
