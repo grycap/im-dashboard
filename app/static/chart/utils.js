@@ -2,6 +2,7 @@
 
 window.chartColors = {
 	red: 'rgb(255, 99, 132)',
+	brightred: 'rgb(255, 24, 74)',
 	orange: 'rgb(255, 159, 64)',
 	yellow: 'rgb(255, 205, 86)',
 	green: 'rgb(75, 192, 192)',
