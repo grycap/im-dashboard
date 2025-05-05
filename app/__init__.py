@@ -27,6 +27,7 @@ import os
 import logging
 import copy
 import requests
+import concurrent.futures
 from requests.exceptions import Timeout
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_dance.consumer import OAuth2ConsumerBlueprint
@@ -839,6 +840,29 @@ def create_app(oidc_blueprint=None):
                 res += '<option name="selectedImage" value=%s>%s</option>' % (image_id, image_name)
         return res
 
+    def _get_quotas(cred_id, auth_data):
+        quotas = {}
+        try:
+            response = im.get_cloud_quotas(cred_id, auth_data)
+            if not response.ok:
+                raise Exception(response.text)
+            quotas = response.json()["quotas"]
+        except Exception as ex:
+            return "Error loading site quotas: %s!" % str(ex), 400
+        return quotas
+
+    def _get_resources(payload, auth_data):
+        res_item = {}
+        try:
+            response = im.get_resources(payload, auth_data)
+            if not response.ok:
+                raise Exception(response.text)
+            resources = response.json()
+            res_item = next(iter(resources.values()))
+        except Exception as ex:
+            app.logger.exception("Error getting resources: %s" % ex)
+        return res_item
+
     @app.route('/usage/<cred_id>')
     @authorized_with_valid_token
     def getusage(cred_id=None):
@@ -853,53 +877,43 @@ def create_app(oidc_blueprint=None):
         template = set_inputs_to_template(template, inputs)
         payload = yaml.dump(template, default_flow_style=False, sort_keys=False)
 
-        quotas = {}
-        try:
-            response = im.get_cloud_quotas(cred_id, auth_data)
-            if not response.ok:
-                raise Exception(response.text)
-            quotas = response.json()["quotas"]
-        except Exception as ex:
-            return "Error loading site quotas: %s!" % str(ex), 400
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            wquotas = executor.submit(_get_quotas, cred_id, auth_data)
+            wresources = executor.submit(_get_resources, payload, auth_data)
+            # Wait for the results
+            quotas = wquotas.result()
+            resources = wresources.result()
 
-        try:
-            response = im.get_resources(payload, auth_data)
-            if not response.ok:
-                raise Exception(response.text)
-            resources = response.json()
-            res_item = next(iter(resources.values()))
-            # Initialize totals
-            totals = {
-                "cores": 0,
-                "ram": 0,
-                "instances": 0,
-                "floating_ips": 0,
-                "volumes": 0,
-                "volume_storage": 0,
-                "security_groups": 3  # default IM value per infrastructure
-            }
+        # Initialize totals
+        totals = {
+            "cores": 0,
+            "ram": 0,
+            "instances": 0,
+            "floating_ips": 0,
+            "volumes": 0,
+            "volume_storage": 0,
+            "security_groups": 3  # default IM value per infrastructure
+        }
 
-            # Compute totals for VMs
-            for vm in res_item.get("compute", []):
-                totals["instances"] += 1
-                totals["cores"] += vm.get("cpuCores", 0)
-                totals["ram"] += vm.get("memoryInMegabytes", 0)
-                totals["floating_ips"] += vm.get("publicIP", 0)
+        # Compute totals for VMs
+        for vm in resources.get("compute", []):
+            totals["instances"] += 1
+            totals["cores"] += vm.get("cpuCores", 0)
+            totals["ram"] += vm.get("memoryInMegabytes", 0)
+            totals["floating_ips"] += vm.get("publicIP", 0)
 
-            totals["ram"] = totals["ram"] / 1024.0  # Convert to GiB
+        totals["ram"] = totals["ram"] / 1024.0  # Convert to GiB
 
-            # Compute totals for storage
-            for disk in res_item.get("storage", []):
-                totals["volumes"] += 1
-                totals["volume_storage"] += disk.get("sizeInGigabytes", 0)
+        # Compute totals for storage
+        for disk in resources.get("storage", []):
+            totals["volumes"] += 1
+            totals["volume_storage"] += disk.get("sizeInGigabytes", 0)
 
-            # Update quotas with computed totals
-            for key, value in totals.items():
-                if key not in quotas:
-                    quotas[key] = {}
-                quotas[key]["touse"] = value
-        except Exception as ex:
-            app.logger.exception("Error getting resources: %s" % ex)
+        # Update quotas with computed totals
+        for key, value in totals.items():
+            if key not in quotas:
+                quotas[key] = {}
+            quotas[key]["touse"] = value
 
         return json.dumps(quotas)
 
