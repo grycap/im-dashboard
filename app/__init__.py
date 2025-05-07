@@ -135,7 +135,7 @@ def create_app(oidc_blueprint=None):
             if 'token' in session:
                 oidc_blueprint.session.token = {'access_token': session['token']}
             elif settings.debug_oidc_token:
-                import jwt # set the import here as it is only needed for debug
+                import jwt  # set the import here as it is only needed for debug
                 decoded_token = jwt.decode(settings.debug_oidc_token, options={"verify_signature": False})
                 expires = int(decoded_token['exp'] - datetime.datetime.now().timestamp())
                 oidc_blueprint.session.token = {'access_token': settings.debug_oidc_token,
