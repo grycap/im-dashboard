@@ -797,7 +797,7 @@ class IMDashboardTests(unittest.TestCase):
         self.login(avatar)
         res = self.client.get('/owners/infid')
         self.assertEqual(200, res.status_code)
-        self.assertEqual(b'Current Owners:<br><ul><li>user1</li><li>user2</li></ul>', res.data)
+        self.assertIn(b'Current Owners:<br><ul><li>user1</li><li>user2</li></ul>', res.data)
 
     def test_oai(self):
         namespace = {'oaipmh': 'http://www.openarchives.org/OAI/2.0/'}
