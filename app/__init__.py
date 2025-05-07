@@ -137,8 +137,9 @@ def create_app(oidc_blueprint=None):
                 oidc_blueprint.session.token = {'access_token': session['token']}
             elif settings.debug_oidc_token:
                 decoded_token = jwt.decode(settings.debug_oidc_token, options={"verify_signature": False})
+                expires = int(decoded_token['exp'] - datetime.datetime.now().timestamp())
                 oidc_blueprint.session.token = {'access_token': settings.debug_oidc_token,
-                                                'expires_in': int(decoded_token['exp'] - datetime.datetime.now().timestamp())}
+                                                'expires_in': expires}
             else:
                 try:
                     if not oidc_blueprint.session.authorized or 'username' not in session:
