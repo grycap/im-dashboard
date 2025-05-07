@@ -27,6 +27,8 @@ import os
 import logging
 import copy
 import requests
+import re
+import jwt
 import concurrent.futures
 from requests.exceptions import Timeout
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -134,7 +136,9 @@ def create_app(oidc_blueprint=None):
             if 'token' in session:
                 oidc_blueprint.session.token = {'access_token': session['token']}
             elif settings.debug_oidc_token:
-                oidc_blueprint.session.token = {'access_token': settings.debug_oidc_token}
+                decoded_token = jwt.decode(settings.debug_oidc_token, options={"verify_signature": False})
+                oidc_blueprint.session.token = {'access_token': settings.debug_oidc_token,
+                                                'expires_in': int(decoded_token['exp'] - datetime.datetime.now().timestamp())}
             else:
                 try:
                     if not oidc_blueprint.session.authorized or 'username' not in session:
@@ -1467,8 +1471,18 @@ def create_app(oidc_blueprint=None):
                     overwrite = True
 
                 if 'token' in form_data and form_data['token'] != '':
-                    response = im.change_user(infid, form_data['token'].strip(),
-                                              overwrite, auth_data)
+                    token = form_data['token'].strip()
+                    ott_match = re.match(r"^([a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})/(.*)$",
+                                         token)
+                    if ott_match:
+                        try:
+                            path = ott_match.group(1)
+                            ott_token = ott_match.group(2)
+                            token = ott.get_data(path, ott_token)
+                        except Exception:
+                            raise Exception("Error with OTT token")
+
+                    response = im.change_user(infid, token, overwrite, auth_data)
                     if not response.ok:
                         raise Exception(response.text)
                 else:
@@ -1552,6 +1566,21 @@ def create_app(oidc_blueprint=None):
             res += "</ul>"
         except Exception as ex:
             res = "Error: %s." % ex
+
+        token = access_token
+        try:
+            ott_token, path = ott.write_data(access_token, access_token)
+            token = path + "/" + ott_token
+        except Exception as ex:
+            app.logger.warning("Error writing OTT token: %s" % ex)
+
+        expires = oidc_blueprint.session.token["expires_in"]
+        token_btn = f'Copy your token to share (expires in { expires } secs): '
+        token_btn += ('<a class="btn btn-outline-success btn-sm" id="copyTokenBtn" ' +
+                      'onclick="navigator.clipboard.writeText(\'' + token +
+                      '\')"><i class="fa fa-copy"></i> Copy</a>')
+
+        res += "<p>" + token_btn + "</p>"
 
         return Markup(res)
 
