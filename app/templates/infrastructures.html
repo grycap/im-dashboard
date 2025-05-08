@@ -487,7 +487,8 @@
                     Loading <span class="spinner-border spinner-border-sm"></span>
                       <script>
                         $(document).ready(function () {
-                          $("#share_token_body").load("/share_token");
+                          
+                          $("#share_token_body").load("{{ url_for('getshare_token') }}");
                         });
                       </script>
                   </div>
