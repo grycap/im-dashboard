@@ -204,7 +204,11 @@ def create_app(oidc_blueprint=None):
             session["token"] = request.args['token']
             oidc_blueprint.session.token = {'access_token': request.args['token']}
         elif settings.debug_oidc_token:
-            oidc_blueprint.session.token = {'access_token': settings.debug_oidc_token}
+            import jwt  # set the import here as it is only needed for debug
+            decoded_token = jwt.decode(settings.debug_oidc_token, options={"verify_signature": False})
+            expires = int(decoded_token['exp'] - datetime.datetime.now().timestamp())
+            oidc_blueprint.session.token = {'access_token': settings.debug_oidc_token,
+                                            'expires_in': expires}
         else:
             if not oidc_blueprint.session.authorized:
                 return redirect(url_for('login'))
@@ -1550,10 +1554,9 @@ def create_app(oidc_blueprint=None):
     @app.route('/owners/<infid>')
     @authorized_with_valid_token
     def getowners(infid=None):
-
+        res = ""
         access_token = oidc_blueprint.session.token['access_token']
         auth_data = utils.getIMUserAuthData(access_token, cred, get_cred_id())
-        res = ""
         try:
             response = im.get_inf_property(infid, 'authorization', auth_data)
             if not response.ok:
@@ -1568,6 +1571,12 @@ def create_app(oidc_blueprint=None):
         except Exception as ex:
             res = "Error: %s." % ex
 
+        return Markup(res)
+
+    @app.route('/share_token')
+    @authorized_with_valid_token
+    def getshare_token():
+        access_token = oidc_blueprint.session.token['access_token']
         token = access_token
         try:
             ott_token, path = ott.write_data(access_token, access_token)
@@ -1581,7 +1590,7 @@ def create_app(oidc_blueprint=None):
                       'onclick="navigator.clipboard.writeText(\'' + token +
                       '\')"><i class="fa fa-copy"></i> Copy</a>')
 
-        res += "<p>" + token_btn + "</p>"
+        res = "<p>" + token_btn + "</p>"
 
         return Markup(res)
 

@@ -43,6 +43,11 @@
       $('#' + infid + '_vms').html(vms);
       $('#deletevms_' + infid + '_body').html(delete_vms);
 
+      // Dispose of existing tooltips to avoid duplicates
+      document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+        const tooltip = bootstrap.Tooltip.getInstance(el);
+        if (tooltip) tooltip.dispose();
+      });
       // Enable tooltips 
       const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
       const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
@@ -141,6 +146,7 @@
             </div>
             <div class="col-md-6 text-end">
               <!-- Button -->
+              <button type=button class='btn btn-outline-secondary' onclick="$('#share_token').modal('show');"  data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Token to share an Infrastructure Ownership"><span class='fas fa-share-nodes mr-2'></span> Token</button>
               <button type=button class='btn btn-outline-secondary' onclick='location.href="{{ url_for('showinfrastructures') }}"'><span class='fas fa-sync mr-2'></span> Refresh</button>
               <button type=button class='btn btn-primary' onclick='location.href="{{ url_for('home') }}"'><span class='fas fa-plus mr-2'></span> New deployment</button>
             </div>
@@ -432,8 +438,6 @@
                   </div>
                 </div>
 
-
-
                 <script>
                   loadInfrState('{{infId}}', '{{infInfo["state"] | tojson | safe}}');
 
@@ -469,6 +473,32 @@
               </tbody>
               <!--Table body-->
             </table>
+
+
+            <!-- Modal Share Token -->
+            <div class="modal fade" id="share_token" role="dialog">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">Share Token</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div id="share_token_body" class="modal-body">
+                    Loading <span class="spinner-border spinner-border-sm"></span>
+                      <script>
+                        $(document).ready(function () {
+                          $("#share_token_body").load("/share_token");
+                        });
+                      </script>
+                  </div>
+                  <div class="modal-footer">
+                    <a class="btn btn-secondary cancelBtn" role="button" data-bs-dismiss="modal">Cancel</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
             <br>
             </div>
         </div>

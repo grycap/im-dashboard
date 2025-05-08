@@ -36,7 +36,7 @@ class OneTimeTokenData():
     def _create(self, access_token):
         """
         Create a locker and return the locker token
-        from fedcloudclient. Thanks ti @tdviet
+        from fedcloudclient. Thanks to @tdviet
         """
         client = hvac.Client(url=self.vault_url)
         client.auth.jwt.jwt_login(role=self.role, jwt=access_token)
@@ -58,12 +58,16 @@ class OneTimeTokenData():
         elif command == "put":
             resp = client.write(self.VAULT_LOCKER_MOUNT_POINT + path, data=data)
             return None
+        elif command == "delete":
+            resp = client.delete(self.VAULT_LOCKER_MOUNT_POINT + path)
         else:
             raise Exception(f"Invalid command {command}")
 
-    def write_data(self, access_token, data):
+    def write_data(self, access_token, data, path=None):
         token = self._create(access_token)
-        path = str(uuid4())
+        if path is None:
+            # Generate a random path
+            path = str(uuid4())
         self.locker_client(token, "put", path, data)
         return token, path
 
