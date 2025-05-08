@@ -1575,7 +1575,7 @@ def create_app(oidc_blueprint=None):
         except Exception as ex:
             app.logger.warning("Error writing OTT token: %s" % ex)
 
-        expires = oidc_blueprint.session.token["expires_in"]
+        expires = int(oidc_blueprint.session.token["expires_in"])
         token_btn = f'Copy your token to share (expires in { expires } secs): '
         token_btn += ('<a class="btn btn-outline-success btn-sm" id="copyTokenBtn" ' +
                       'onclick="navigator.clipboard.writeText(\'' + token +
