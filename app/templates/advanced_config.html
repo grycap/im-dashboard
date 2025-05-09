@@ -96,6 +96,7 @@
             $('#fedcloudImages').hide();
             $('#siteImages').hide();
             $('#fedcloudUsage').hide();
+            $('#outOfResources').hide();
             return;
         } else if (cred_type == 'fedcloud') {
             $('#cloudImages').hide();
@@ -234,7 +235,7 @@
                    }
                    $('#divLoadingUsage').hide();
                    if (!enough) {
-                       $('#outOfResources').modal('show');
+                       $('#outOfResources').show();
                    }
                },
                error : function(error)
@@ -276,24 +277,6 @@
 
   <div id="manschedConf">
       <p></p>
-
-    <!-- Modal Out of resources -->
-    <div class="modal fade" id="outOfResources" role="dialog">
-        <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-warning text-white">
-            <h5 class="modal-title" id="outOfResources"><span class="fas fa-exclamation-triangle"></span> Not enough resources</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-            <p>Not enough resources to deploy this template. Please change the template or the cloud provider.</p>
-            </div>
-            <div class="modal-footer">
-            <a class="btn btn-primary cancelBtn" role="button" data-bs-dismiss="modal">Close</a>
-            </div>
-        </div>
-        </div>
-    </div>
 
       <div class="row">
        <div class="col-md-5">
@@ -360,6 +343,13 @@
                    <div class="col-md-2">
                        <canvas id="chart-area-security_groups" width="110px" height="110px"></canvas>
                    </div>
+               </div>
+               <div id="outOfResources" class="row ms-2 me-2 mt-2" style="display: none;">
+                <h5 class="text-center"><span class="fas fa-exclamation-triangle text-danger"></span> Not enough resources</h5>
+                <p class="text-center">
+                    Not enough resources to deploy this template.<br>
+                    Please change the template or the cloud provider.
+                </p>
                </div>
            </div>
 
