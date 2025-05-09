@@ -146,7 +146,7 @@
             </div>
             <div class="col-md-6 text-end">
               <!-- Button -->
-              <button type=button class='btn btn-outline-secondary' onclick="$('#share_token').modal('show');"  data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Token to share an Infrastructure Ownership"><span class='fas fa-share-nodes mr-2'></span> Token</button>
+              <button type=button class='btn btn-outline-primary' onclick="$('#share_token').modal('show');"  data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Share this token to get access to an infrastructure"><span class='fas fa-share-nodes mr-2'></span> Token</button>
               <button type=button class='btn btn-outline-secondary' onclick='location.href="{{ url_for('showinfrastructures') }}"'><span class='fas fa-sync mr-2'></span> Refresh</button>
               <button type=button class='btn btn-primary' onclick='location.href="{{ url_for('home') }}"'><span class='fas fa-plus mr-2'></span> New deployment</button>
             </div>
@@ -484,7 +484,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                   </div>
                   <div id="share_token_body" class="modal-body">
-                    Loading <span class="spinner-border spinner-border-sm"></span>
+                    Generating token <span class="spinner-border spinner-border-sm"></span>
                       <script>
                         $(document).ready(function () {
                           

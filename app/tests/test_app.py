@@ -799,6 +799,19 @@ class IMDashboardTests(unittest.TestCase):
         self.assertEqual(200, res.status_code)
         self.assertIn(b'Current Owners:<br><ul><li>user1</li><li>user2</li></ul>', res.data)
 
+    @patch("app.utils.getIMUserAuthData")
+    @patch("app.utils.avatar")
+    def test_share_token(self, avatar, user_data):
+        user_data.return_value = "type = InfrastructureManager; token = access_token"
+        self.login(avatar)
+        res = self.client.get('/share_token')
+        self.assertEqual(200, res.status_code)
+        expected_res = ('<p>Copy your token to share (expires in 500 secs): ' +
+                        '<a class="btn btn-outline-success btn-sm" id="copyTokenBtn" ' +
+                        'onclick="navigator.clipboard.writeText(\'token\')">' +
+                        '<i class="fa fa-copy"></i> Copy</a></p>')
+        self.assertEqual(expected_res, res.data.decode('utf-8'))
+
     def test_oai(self):
         namespace = {'oaipmh': 'http://www.openarchives.org/OAI/2.0/'}
 
