@@ -10,5 +10,5 @@ if [ "${ENABLE_HTTPS}" == "True" ]; then
     exit 1
   fi
 else
-  exec gunicorn --bind 0.0.0.0:5001 -k "$WORKER_TYPE" -w "$WORKERS" --timeout "$TIMEOUT" --threads "$THREADS" imdashboard:app
+  exec gunicorn --limit-request-line 8190 --bind 0.0.0.0:5001 -k "$WORKER_TYPE" -w "$WORKERS" --timeout "$TIMEOUT" --threads "$THREADS" imdashboard:app
 fi
