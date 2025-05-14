@@ -1658,12 +1658,11 @@ def create_app(oidc_blueprint=None):
 
         infra_name = ""
         inputs = utils.getReconfigureInputs(template)
-        if inputs:
-            try:
-                infra_data = infra.get_infra(infid)
-            except Exception:
-                infra_data = {}
-            infra_name = infra_data.get("name", "")
+        try:
+            infra_data = infra.get_infra(infid)
+        except Exception:
+            infra_data = {}
+        infra_name = infra_data.get("name", "")
 
         return render_template('reconfigure.html', infid=infid, inputs=inputs, infra_name=infra_name, template=template)
 
