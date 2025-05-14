@@ -903,14 +903,14 @@ def convert_value(value, value_type):
 
 def get_list_values(name, inputs, value_type="string", retun_type="list"):
 
-    cont = 1
     # Special case for ports
     if value_type in PORT_SPECT_TYPES:
         ports_value = {}
-        while "%s_list_value_%d_range" % (name, cont) in inputs:
-            port_num = inputs["%s_list_value_%d_range" % (name, cont)]
-            remote_cidr = inputs.get("%s_list_value_%d_cidr" % (name, cont))
-            target_port = inputs.get("%s_list_value_%d_target" % (name, cont))
+        port_inputs = sorted([elem for elem in inputs if re.match("%s_list_value_[0-9]+_range" % name, elem)])
+        for elem in port_inputs:
+            port_num = inputs[elem]
+            remote_cidr = inputs.get(elem.replace("_range", "_cidr"))
+            target_port = inputs.get(elem.replace("_range", "_target"))
             port_name = "port_%s" % port_num.replace(":", "_")
             # Should we also open UDP?
             ports_value[port_name] = {"protocol": "tcp"}
@@ -924,25 +924,24 @@ def get_list_values(name, inputs, value_type="string", retun_type="list"):
                 ports_value[port_name]["source"] = int(port_num)
             if remote_cidr:
                 ports_value[port_name]["remote_cidr"] = remote_cidr
-            cont += 1
         if retun_type == "map":
             return ports_value
         else:
             return list(ports_value.values())
     elif retun_type == "list":
         values = []
-        while "%s_list_value_%d" % (name, cont) in inputs:
-            value = inputs["%s_list_value_%d" % (name, cont)]
+        list_inputs = sorted([elem for elem in inputs if elem.startswith("%s_list_value_" % name)])
+        for elem in list_inputs:
+            value = inputs[elem]
             values.append(convert_value(value, value_type))
-            cont += 1
         return values
     else:
         values = {}
-        while "%s_list_value_%d_key" % (name, cont) in inputs:
-            key = inputs["%s_list_value_%d_key" % (name, cont)]
-            value = inputs["%s_list_value_%d_value" % (name, cont)]
+        map_inputs = sorted([elem for elem in inputs if re.match("%s_list_value_[0-9]+_key" % name, elem)])
+        for elem in map_inputs:
+            key = inputs[elem]
+            value = inputs[elem.replace("_key", "_value")]
             values[key] = convert_value(value, value_type)
-            cont += 1
         return values
 
 
