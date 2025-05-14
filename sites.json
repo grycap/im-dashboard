@@ -49,7 +49,7 @@
     },
     {
         "name": "CESNET-MCCG2",
-        "url": "https://compute.brno.openstack.cloud.e-infra.cz",
+        "url": "https://identity.brno.openstack.cloud.e-infra.cz",
         "id": "3811G0",
         "vos": {
             "training.egi.eu": "10875a29940b4d1bb5c0542a1dce294f"
