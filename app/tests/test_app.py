@@ -505,7 +505,7 @@ class IMDashboardTests(unittest.TestCase):
         user_data.return_value = "type = InfrastructureManager; token = access_token"
         get.side_effect = self.get_response
         self.login(avatar)
-        get_site_info.return_value = ({"id": "id"}, "", "vo_name")
+        get_site_info.return_value = ({"id": "id", "name": "name"}, "", "vo_name")
 
         res = self.client.get('/images/credid?local=1')
         self.assertEqual(200, res.status_code)
