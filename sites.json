@@ -48,6 +48,20 @@
         }
     },
     {
+        "name": "CESNET-MCCG2",
+        "url": "https://identity.brno.openstack.cloud.e-infra.cz",
+        "id": "3811G0",
+        "vos": {
+            "training.egi.eu": "10875a29940b4d1bb5c0542a1dce294f"
+        },
+        "networks": {
+            "training.egi.eu": {
+                "private": "internal-ipv4-general-private",
+                "public": "external-ipv4-general-public"
+            }
+        }
+    },
+    {
         "name": "NCG-INGRID-PT",
         "url": "https://stratus.ncg.ingrid.pt:5000",
         "id": "12005G0",
