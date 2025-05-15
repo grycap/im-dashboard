@@ -38,7 +38,7 @@ from flask import flash, g
 from radl.radl_json import parse_radl
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-from app import appdb
+from app import cloud_info
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 urllib3.disable_warnings(InsecureRequestWarning)
@@ -73,15 +73,15 @@ def _getStaticSitesInfo(force=False):
         return []
 
 
-def getCachedProjectIDs(site_id):
+def getCachedProjectIDs(site_name):
     res = {}
-    for site in getCachedSiteList().values():
-        if site_id == site["id"]:
+    for name, site in getCachedSiteList().items():
+        if site_name == name:
             if "vos" not in site:
                 site["vos"] = {}
             if "vos_updated" not in site or not site["vos_updated"]:
                 try:
-                    site["vos"].update(appdb.get_project_ids(site_id))
+                    site["vos"].update(cloud_info.get_project_ids(site_name))
                     site["vos_updated"] = True
                 except Exception as ex:
                     print("Error loading project IDs from AppDB: %s" % ex, file=sys.stderr)
@@ -108,10 +108,11 @@ def get_site_info(cred_id, cred, userid):
     cred_data = cred.get_cred(cred_id, userid)
     vo = cred_data['vo']
 
-    for site in list(getCachedSiteList().values()):
+    for site_name, site in getCachedSiteList().items():
         if site['url'] == cred_data['host']:
             res_site = site
-            project_ids = getCachedProjectIDs(site["id"])
+            res_site['name'] = site_name
+            project_ids = getCachedProjectIDs(site_name)
             if vo in project_ids:
                 domain = project_ids[vo]
             break
@@ -140,11 +141,11 @@ def getCachedSiteList(force=False):
     global LAST_UPDATE
 
     now = int(time.time())
-    if force or not SITE_LIST or now - LAST_UPDATE > g.settings.appdb_cache_timeout:
+    if force or not SITE_LIST or now - LAST_UPDATE > g.settings.cloud_info_cache_timeout:
         try:
-            sites = appdb.get_sites()
+            sites = cloud_info.get_sites()
             if sites:
-                SITE_LIST = appdb.get_sites()
+                SITE_LIST = cloud_info.get_sites()
             # in case of error do not update time
             LAST_UPDATE = now
         except Exception as ex:
@@ -255,7 +256,8 @@ def getUserAuthData(access_token, cred, userid, cred_id=None, full=False, add_ex
                 # only load this data if a EGI Cloud site appears
                 if fedcloud_sites is None:
                     fedcloud_sites = {}
-                    for site in list(getCachedSiteList().values()):
+                    for name, site in getCachedSiteList().items():
+                        site['name'] = name
                         fedcloud_sites[site['url']] = site
 
                 if cred['host'] in fedcloud_sites:
@@ -267,7 +269,7 @@ def getUserAuthData(access_token, cred, userid, cred_id=None, full=False, add_ex
                     if 'region' in site_info:
                         res += "; service_region = %s" % site_info['region']
 
-                    project_ids = getCachedProjectIDs(site_info["id"])
+                    project_ids = getCachedProjectIDs(site_info['name'])
                     if cred['vo'] in project_ids and project_ids[cred['vo']]:
                         projectid = project_ids[cred['vo']]
                 else:
@@ -803,13 +805,14 @@ def get_project_ids(creds):
             # only load this data the first time EGI Cloud site appears
             if fedcloud_sites is None:
                 fedcloud_sites = {}
-                for site in list(getCachedSiteList().values()):
+                for name, site in getCachedSiteList().items():
+                    site['name'] = name
                     fedcloud_sites[site['url']] = site
 
             if cred['host'] in fedcloud_sites:
                 site_info = fedcloud_sites[cred['host']]
 
-                project_ids = getCachedProjectIDs(site_info["id"])
+                project_ids = getCachedProjectIDs(site_info['name'])
                 if cred['vo'] in project_ids:
                     cred['project_id'] = project_ids[cred['vo']]
 
