@@ -104,7 +104,7 @@ class TestAppDB(unittest.TestCase):
             }
         ]"""
         cloudinfo_call.return_value = json.loads(shares)
-        res = cloud_info.get_project_ids("11548G0")
+        res = cloud_info.get_project_ids("TR-FC1-ULAKBIM")
         self.assertEqual(
             res,
             {
@@ -124,7 +124,7 @@ class TestAppDB(unittest.TestCase):
             }
         ]"""
         cloudinfo_call.return_value = json.loads(images)
-        res = cloud_info.get_images("11548G0", "vo.access.egi.eu")
+        res = cloud_info.get_images("RECAS-BARI", "vo.access.egi.eu")
         self.assertEqual(res, [("ScipionCloud-GPU", "scipioncloud.gpu")])
 
 

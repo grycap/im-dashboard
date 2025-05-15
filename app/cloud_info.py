@@ -60,8 +60,8 @@ def get_sites(vo=None):
     return endpoints
 
 
-def get_images(site_id, vo):
-    cloudinfo_url = f"/site/{site_id}/{vo}/images"
+def get_images(site_name, vo):
+    cloudinfo_url = f"/site/{site_name}/{vo}/images"
     images = set()
     data = cloudinfo_call(cloudinfo_url)
     if data:
@@ -69,9 +69,9 @@ def get_images(site_id, vo):
     return list(images)
 
 
-def get_project_ids(site_id):
+def get_project_ids(site_name):
     projects = {}
-    data = cloudinfo_call(f"/site/{site_id}/projects")
+    data = cloudinfo_call(f"/site/{site_name}/projects")
     if data:
         projects = {proj["name"]: proj["id"] for proj in data}
     return projects
