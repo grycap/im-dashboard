@@ -31,8 +31,8 @@ def read_file_as_string(file_name):
     return open(abs_file_path, "r").read()
 
 
-class TestAppDB(unittest.TestCase):
-    """Class to test the AppDB functions."""
+class TestCloudInfo(unittest.TestCase):
+    """Class to test the cloud info functions."""
 
     @staticmethod
     def requests_response(method, url, **kwargs):
