@@ -56,6 +56,11 @@ def get_sites(vo=None):
     endpoints = {}
     data = cloudinfo_call(cloudinfo_url)
     for site in data:
+        # Remove the version part from the URL
+        if site.get("url", ""):
+            if site["url"].endswith("/"):
+                site["url"] = site["url"][:-1]
+            site["url"] = site["url"].rsplit("/", 1)[0]
         endpoints[site["name"]] = site
     return endpoints
 
