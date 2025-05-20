@@ -21,7 +21,7 @@
 """Function to contact EGI Cloud Info."""
 import requests
 
-CLOUDINFO_URL = "http://is.ops.fedcloud.eu"
+CLOUDINFO_URL = "http://is.cloud.egi.eu"
 CLOUDINFO_TIMEOUT = 10
 
 
