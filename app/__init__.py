@@ -846,7 +846,8 @@ def create_app(oidc_blueprint=None):
         else:
             site, _, vo = utils.get_site_info(cred_id, cred, get_cred_id())
             for image_name, image_id in cloud_info.get_images(site['name'], vo):
-                res += '<option name="selectedImage" value=%s>%s</option>' % (image_id, image_name)
+                if image_id:
+                    res += '<option name="selectedImage" value=%s>%s</option>' % (image_id, image_name)
         return res
 
     def _get_quotas(cred_id, auth_data):
