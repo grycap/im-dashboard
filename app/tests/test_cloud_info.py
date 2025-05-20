@@ -83,7 +83,7 @@ class TestCloudInfo(unittest.TestCase):
             res,
             {
                 "TR-FC1-ULAKBIM": {
-                    "url": "https://bulut.truba.gov.tr:5000/v3",
+                    "url": "https://bulut.truba.gov.tr:5000",
                     "state": "",
                     "id": "1",
                     "name": "TR-FC1-ULAKBIM",
