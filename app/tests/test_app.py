@@ -485,7 +485,7 @@ class IMDashboardTests(unittest.TestCase):
         self.assertIn(b'<option selected value="4">4</option>', res.data)
 
     @patch("app.utils.avatar")
-    @patch("app.appdb.get_sites")
+    @patch("app.cloud_info.get_sites")
     def test_sites(self, get_sites, avatar):
         self.login(avatar)
         get_sites.return_value = {"SITE_NAME": {"url": "URL", "state": "", "id": ""},
@@ -499,13 +499,13 @@ class IMDashboardTests(unittest.TestCase):
     @patch("app.utils.avatar")
     @patch("app.utils.getUserAuthData")
     @patch("app.utils.get_site_info")
-    @patch("app.appdb.get_images")
+    @patch("app.cloud_info.get_images")
     @patch('requests.get')
     def test_images(self, get, get_images, get_site_info, user_data, avatar):
         user_data.return_value = "type = InfrastructureManager; token = access_token"
         get.side_effect = self.get_response
         self.login(avatar)
-        get_site_info.return_value = ({"id": "id"}, "", "vo_name")
+        get_site_info.return_value = ({"id": "id", "name": "name"}, "", "vo_name")
 
         res = self.client.get('/images/credid?local=1')
         self.assertEqual(200, res.status_code)
@@ -596,8 +596,8 @@ class IMDashboardTests(unittest.TestCase):
 
     @patch("app.utils.avatar")
     @patch("app.db_cred.DBCredentials.get_creds")
-    @patch("app.appdb.get_sites")
-    @patch("app.appdb.get_project_ids")
+    @patch("app.cloud_info.get_sites")
+    @patch("app.cloud_info.get_project_ids")
     def test_manage_creds(self, get_project_ids, get_sites, get_creds, avatar):
         self.login(avatar)
         get_project_ids.return_value = {}

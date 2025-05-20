@@ -38,7 +38,7 @@ from flask import flash, g
 from radl.radl_json import parse_radl
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-from app import appdb
+from app import cloud_info
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 urllib3.disable_warnings(InsecureRequestWarning)
@@ -73,15 +73,15 @@ def _getStaticSitesInfo(force=False):
         return []
 
 
-def getCachedProjectIDs(site_id):
+def getCachedProjectIDs(site_name):
     res = {}
-    for site in getCachedSiteList().values():
-        if site_id == site["id"]:
+    for name, site in getCachedSiteList().items():
+        if site_name == name:
             if "vos" not in site:
                 site["vos"] = {}
             if "vos_updated" not in site or not site["vos_updated"]:
                 try:
-                    site["vos"].update(appdb.get_project_ids(site_id))
+                    site["vos"].update(cloud_info.get_project_ids(site_name))
                     site["vos_updated"] = True
                 except Exception as ex:
                     print("Error loading project IDs from AppDB: %s" % ex, file=sys.stderr)
@@ -108,10 +108,11 @@ def get_site_info(cred_id, cred, userid):
     cred_data = cred.get_cred(cred_id, userid)
     vo = cred_data['vo']
 
-    for site in list(getCachedSiteList().values()):
+    for site_name, site in getCachedSiteList().items():
         if site['url'] == cred_data['host']:
             res_site = site
-            project_ids = getCachedProjectIDs(site["id"])
+            res_site['name'] = site_name
+            project_ids = getCachedProjectIDs(site_name)
             if vo in project_ids:
                 domain = project_ids[vo]
             break
@@ -140,11 +141,11 @@ def getCachedSiteList(force=False):
     global LAST_UPDATE
 
     now = int(time.time())
-    if force or not SITE_LIST or now - LAST_UPDATE > g.settings.appdb_cache_timeout:
+    if force or not SITE_LIST or now - LAST_UPDATE > g.settings.cloudinfo_cache_timeout:
         try:
-            sites = appdb.get_sites()
+            sites = cloud_info.get_sites()
             if sites:
-                SITE_LIST = appdb.get_sites()
+                SITE_LIST = cloud_info.get_sites()
             # in case of error do not update time
             LAST_UPDATE = now
         except Exception as ex:
@@ -255,7 +256,8 @@ def getUserAuthData(access_token, cred, userid, cred_id=None, full=False, add_ex
                 # only load this data if a EGI Cloud site appears
                 if fedcloud_sites is None:
                     fedcloud_sites = {}
-                    for site in list(getCachedSiteList().values()):
+                    for name, site in getCachedSiteList().items():
+                        site['name'] = name
                         fedcloud_sites[site['url']] = site
 
                 if cred['host'] in fedcloud_sites:
@@ -267,7 +269,7 @@ def getUserAuthData(access_token, cred, userid, cred_id=None, full=False, add_ex
                     if 'region' in site_info:
                         res += "; service_region = %s" % site_info['region']
 
-                    project_ids = getCachedProjectIDs(site_info["id"])
+                    project_ids = getCachedProjectIDs(site_info['name'])
                     if cred['vo'] in project_ids and project_ids[cred['vo']]:
                         projectid = project_ids[cred['vo']]
                 else:
@@ -803,13 +805,14 @@ def get_project_ids(creds):
             # only load this data the first time EGI Cloud site appears
             if fedcloud_sites is None:
                 fedcloud_sites = {}
-                for site in list(getCachedSiteList().values()):
+                for name, site in getCachedSiteList().items():
+                    site['name'] = name
                     fedcloud_sites[site['url']] = site
 
             if cred['host'] in fedcloud_sites:
                 site_info = fedcloud_sites[cred['host']]
 
-                project_ids = getCachedProjectIDs(site_info["id"])
+                project_ids = getCachedProjectIDs(site_info['name'])
                 if cred['vo'] in project_ids:
                     cred['project_id'] = project_ids[cred['vo']]
 
@@ -903,14 +906,14 @@ def convert_value(value, value_type):
 
 def get_list_values(name, inputs, value_type="string", retun_type="list"):
 
-    cont = 1
     # Special case for ports
     if value_type in PORT_SPECT_TYPES:
         ports_value = {}
-        while "%s_list_value_%d_range" % (name, cont) in inputs:
-            port_num = inputs["%s_list_value_%d_range" % (name, cont)]
-            remote_cidr = inputs.get("%s_list_value_%d_cidr" % (name, cont))
-            target_port = inputs.get("%s_list_value_%d_target" % (name, cont))
+        port_inputs = sorted([elem for elem in inputs if re.match("%s_list_value_[0-9]+_range" % name, elem)])
+        for elem in port_inputs:
+            port_num = inputs[elem]
+            remote_cidr = inputs.get(elem.replace("_range", "_cidr"))
+            target_port = inputs.get(elem.replace("_range", "_target"))
             port_name = "port_%s" % port_num.replace(":", "_")
             # Should we also open UDP?
             ports_value[port_name] = {"protocol": "tcp"}
@@ -924,25 +927,24 @@ def get_list_values(name, inputs, value_type="string", retun_type="list"):
                 ports_value[port_name]["source"] = int(port_num)
             if remote_cidr:
                 ports_value[port_name]["remote_cidr"] = remote_cidr
-            cont += 1
         if retun_type == "map":
             return ports_value
         else:
             return list(ports_value.values())
     elif retun_type == "list":
         values = []
-        while "%s_list_value_%d" % (name, cont) in inputs:
-            value = inputs["%s_list_value_%d" % (name, cont)]
+        list_inputs = sorted([elem for elem in inputs if elem.startswith("%s_list_value_" % name)])
+        for elem in list_inputs:
+            value = inputs[elem]
             values.append(convert_value(value, value_type))
-            cont += 1
         return values
     else:
         values = {}
-        while "%s_list_value_%d_key" % (name, cont) in inputs:
-            key = inputs["%s_list_value_%d_key" % (name, cont)]
-            value = inputs["%s_list_value_%d_value" % (name, cont)]
+        map_inputs = sorted([elem for elem in inputs if re.match("%s_list_value_[0-9]+_key" % name, elem)])
+        for elem in map_inputs:
+            key = inputs[elem]
+            value = inputs[elem.replace("_key", "_value")]
             values[key] = convert_value(value, value_type)
-            cont += 1
         return values
 
 
