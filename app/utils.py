@@ -141,7 +141,7 @@ def getCachedSiteList(force=False):
     global LAST_UPDATE
 
     now = int(time.time())
-    if force or not SITE_LIST or now - LAST_UPDATE > g.settings.cloud_info_cache_timeout:
+    if force or not SITE_LIST or now - LAST_UPDATE > g.settings.cloudinfo_cache_timeout:
         try:
             sites = cloud_info.get_sites()
             if sites:
