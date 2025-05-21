@@ -841,13 +841,16 @@ def create_app(oidc_blueprint=None):
                 for image in response.json()["images"]:
                     res += '<option name="selectedSiteImage" value=%s>%s</option>' % (image['uri'], image['name'])
             except Exception as ex:
-                res += '<option name="selectedSiteImage" value=%s>%s</option>' % (ex, ex)
+                res = 'Error: %s' % ex
 
         else:
-            site, _, vo = utils.get_site_info(cred_id, cred, get_cred_id())
-            for image_name, image_id in cloud_info.get_images(site['name'], vo):
-                if image_id:
-                    res += '<option name="selectedImage" value=%s>%s</option>' % (image_id, image_name)
+            try:
+                site, _, vo = utils.get_site_info(cred_id, cred, get_cred_id())
+                for image_name, image_id in cloud_info.get_images(site['name'], vo):
+                    if image_id:
+                        res += '<option name="selectedImage" value=%s>%s</option>' % (image_id, image_name)
+            except Exception as ex:
+                res = 'Error: %s' % ex
         return res
 
     def _get_quotas(cred_id, auth_data):
@@ -858,7 +861,7 @@ def create_app(oidc_blueprint=None):
                 raise Exception(response.text)
             quotas = response.json()["quotas"]
         except Exception as ex:
-            return "Error loading site quotas: %s!" % str(ex), 400
+            quotas["quota_error"] = "Error loading site quotas: %s" % ex
         return quotas
 
     def _get_resources(payload, auth_data):
@@ -870,7 +873,7 @@ def create_app(oidc_blueprint=None):
             resources = response.json()
             res_item = next(iter(resources.values()))
         except Exception as ex:
-            app.logger.exception("Error getting resources: %s" % ex)
+            res_item["resource_error"] = "Error loading resources: %s" % ex
         return res_item
 
     @app.route('/usage/<cred_id>')
@@ -924,6 +927,9 @@ def create_app(oidc_blueprint=None):
             if key not in quotas:
                 quotas[key] = {}
             quotas[key]["touse"] = value
+
+        if "resource_error" in resources:
+            quotas["resource_error"] = resources["resource_error"]
 
         return json.dumps(quotas)
 
