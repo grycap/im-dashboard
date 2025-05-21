@@ -841,13 +841,16 @@ def create_app(oidc_blueprint=None):
                 for image in response.json()["images"]:
                     res += '<option name="selectedSiteImage" value=%s>%s</option>' % (image['uri'], image['name'])
             except Exception as ex:
-                res += '<option name="selectedSiteImage" value=%s>%s</option>' % (ex, ex)
+                res = 'Error: %s' % ex
 
         else:
-            site, _, vo = utils.get_site_info(cred_id, cred, get_cred_id())
-            for image_name, image_id in cloud_info.get_images(site['name'], vo):
-                if image_id:
-                    res += '<option name="selectedImage" value=%s>%s</option>' % (image_id, image_name)
+            try:
+                site, _, vo = utils.get_site_info(cred_id, cred, get_cred_id())
+                for image_name, image_id in cloud_info.get_images(site['name'], vo):
+                    if image_id:
+                        res += '<option name="selectedImage" value=%s>%s</option>' % (image_id, image_name)
+            except Exception as ex:
+                res = 'Error: %s' % ex
         return res
 
     def _get_quotas(cred_id, auth_data):

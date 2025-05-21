@@ -163,8 +163,16 @@
             success : function(text)
             {
                 $('#selectedImage').empty();
-                $('#selectedImage').append("<option value=''> - Select one image - </option>");
-                $('#selectedImage').append(text);
+                if (text == "" || text.startsWith("Error:")) {
+                    $('#selectedImage').append("<option value=''>No images available</option>");
+                    $("#selectedImage").prop('disabled', true);
+                    if (text.startsWith("Error:")) {
+                        alert(text);
+                    }
+                } else {
+                    $('#selectedImage').append("<option value=''> - Select one image - </option>");
+                    $('#selectedImage').append(text);
+                }
             }
         });
    }
@@ -178,8 +186,16 @@
             success : function(text)
             {
                 $('#selectedSiteImage').empty();
-                $('#selectedSiteImage').append("<option value=''> - Select one image - </option>");
-                $('#selectedSiteImage').append(text);
+                if (text == "" || text.startsWith("Error:")) {
+                    $('#selectedSiteImage').append("<option value=''>No images available</option>");
+                    $("#selectedSiteImage").prop('disabled', true);
+                    if (text.startsWith("Error:")) {
+                        alert(text);
+                    }
+                } else {
+                    $('#selectedSiteImage').append("<option value=''> - Select one image - </option>");
+                    $('#selectedSiteImage').append(text);
+                }
             }
         });
    }
