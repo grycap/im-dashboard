@@ -223,7 +223,7 @@
                        var free = Math.round(quotas[resource_types[i]]["limit"] - quotas[resource_types[i]]["used"] - quotas[resource_types[i]]["touse"])
                        var used = Math.round(quotas[resource_types[i]]["used"]);
                        var deploy = Math.round(quotas[resource_types[i]]["touse"]);
-                       // there are not enough free resources
+
                        var free_color = window.chartColors.grey;
                        var used_color = window.chartColors.orange;
                        var deploy_color = window.chartColors.green;
@@ -252,6 +252,13 @@
                    $('#divLoadingUsage').hide();
                    if (!enough) {
                        $('#outOfResources').show();
+                   }
+                   // show error messages
+                   if ("resource_error" in quotas) {
+                       alert(quotas["resource_error"]);
+                   }
+                   if ("quota_error" in quotas) {
+                       alert(quotas["quota_error"]);
                    }
                },
                error : function(error)
