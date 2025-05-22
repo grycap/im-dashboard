@@ -70,7 +70,7 @@ def get_images(site_name, vo):
     images = set()
     data = cloudinfo_call(cloudinfo_url)
     if data:
-        images = set([(img["name"], img["appdb_id"]) for img in data])
+        images = set([(img["name"], img["egi_id"]) for img in data])
     return list(images)
 
 

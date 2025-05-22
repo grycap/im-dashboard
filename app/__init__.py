@@ -1104,7 +1104,7 @@ def create_app(oidc_blueprint=None):
                         pub_network_id = site["networks"][vo]["public"]
 
             if form_data.get('extra_opts.selectedImage', "") != "" and 'name' in site:
-                image = "appdb://%s/%s?%s" % (site['name'], form_data['extra_opts.selectedImage'], vo)
+                image = "egi://%s/%s?%s" % (site['name'], form_data['extra_opts.selectedImage'], vo)
             elif form_data.get('extra_opts.selectedSiteImage', "") != "":
                 image = form_data['extra_opts.selectedSiteImage']
         else:
