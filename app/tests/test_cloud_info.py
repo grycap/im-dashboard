@@ -118,7 +118,7 @@ class TestCloudInfo(unittest.TestCase):
         images = """[
             {
                 "name": "ScipionCloud-GPU",
-                "appdb_id": "scipioncloud.gpu",
+                "egi_id": "scipioncloud.gpu",
                 "id": "cea20767-9a69-46b2-aa7f-3da2f5857f1b",
                 "mpuri": "https://appdb.egi.eu/store/vo/image/57bb9e4e-0d8d-5eff-aff1-57aa65e32c5c:15494/"
             }
