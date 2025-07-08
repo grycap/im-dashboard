@@ -120,7 +120,7 @@ def get_site_info(cred_id, cred, userid):
     return res_site, domain, vo
 
 
-def getUserVOs(entitlements, vo_role=None):
+def getUserVOs(entitlements, vo_roles=[]):
     vos = []
     for elem in entitlements:
         # format: urn:mace:egi.eu:group:eosc-synergy.eu:role=vm_operator#aai.egi.eu
@@ -128,8 +128,11 @@ def getUserVOs(entitlements, vo_role=None):
         if elem.startswith('urn:mace:egi.eu:group:'):
             vo = elem[22:22 + elem[22:].find(':')]
             if vo and vo not in vos:
-                if not vo_role or ":role=%s#" % vo_role in elem or ":%s:" % vo_role in elem:
+                if not vo_roles:
                     vos.append(vo)
+                for vo_role in vo_roles:
+                    if f":role={vo_role}#" in elem or f":{vo_role}:" in elem:
+                        vos.append(vo)
         elif elem in g.settings.vo_map and g.settings.vo_map[elem] not in vos:
             vos.append(g.settings.vo_map[elem])
     vos.sort()
