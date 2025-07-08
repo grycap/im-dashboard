@@ -32,6 +32,8 @@ class TestUtils(unittest.TestCase):
                         'urn:mace:egi.eu:group:vo.test3.egi.eu:vm_operator:role=member#aai.egi.eu']
         res = utils.getUserVOs(entitlements)
         self.assertEqual(res, ['vo.test.egi.eu', 'vo.test2.egi.eu', 'vo.test3.egi.eu'])
+        res = utils.getUserVOs(entitlements, ['vm_operator'])
+        self.assertEqual(res, ['vo.test.egi.eu', 'vo.test3.egi.eu'])
 
     @patch("app.utils.getCachedProjectIDs")
     @patch("app.utils.getCachedSiteList")

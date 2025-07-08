@@ -227,7 +227,7 @@ def create_app(oidc_blueprint=None):
                 session["vos"] = None
                 if 'eduperson_entitlement' in account_info_json:
                     session["vos"] = utils.getUserVOs(account_info_json['eduperson_entitlement'],
-                                                      settings.vos_user_role)
+                                                      settings.vos_user_roles)
 
                 if settings.oidcGroups:
                     user_groups = []
