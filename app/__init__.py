@@ -1768,7 +1768,9 @@ def create_app(oidc_blueprint=None):
         mems = [0]
         labels = ["%s 00:00:00" % init_date]
         cloud_hosts = []
+        tosca_names = []
         clouds = [""]
+        apps = [""]
         site_name = None
         try:
             for inf_stat in sorted(im.get_stats(auth_data, init_date, end_date),
@@ -1784,11 +1786,30 @@ def create_app(oidc_blueprint=None):
                     site_name = inf_stat['cloud_host']
                     if site_name in fedcloud_sites:
                         site_name = fedcloud_sites[site_name]
+
+                    if "open-science-cloud.ec.europa.eu" in site_name:
+                        eu_node_site = "EU Node"
+                        if "iaas" in site_name:
+                            eu_node_site += " IaaS"
+                        elif "paas" in site_name:
+                            eu_node_site += " PaaS"
+                        if "eu-1" in site_name:
+                            site_name = eu_node_site + " Site 1"
+                        elif "eu-2" in site_name:
+                            site_name = eu_node_site + " Site 2"
+
+                    if "chameleoncloud.org" in site_name:
+                        site_name = site_name[:-19].upper().replace(".", "@")
+                        site_name = "Chameleon " + site_name
+
                 elif inf_stat['cloud_type']:
                     site_name = inf_stat['cloud_type']
 
                 if site_name not in cloud_hosts:
                     cloud_hosts.append(site_name)
+
+                if inf_stat['tosca_name'] and inf_stat['tosca_name'] not in tosca_names:
+                    tosca_names.append(inf_stat['tosca_name'])
 
                 if active:
                     curr_date = datetime.datetime.strptime(inf_stat['creation_date'], "%Y-%m-%d %H:%M:%S")
@@ -1801,12 +1822,13 @@ def create_app(oidc_blueprint=None):
                             mems.append(inf[1] * -1.0)
                             cpus.append(inf[2] * -1)
                             clouds.append(inf[3])
-                            labels.append(inf[4])
+                            apps.append(inf[4])
+                            labels.append(inf[5])
                             inf_actives.remove(inf)
 
                     inf_actives.append((inf_stat['vm_count'], (inf_stat['memory_size'] / 1024),
-                                        inf_stat['cpu_count'], site_name, inf_stat['last_date'],
-                                        inf_stat['deleted']))
+                                        inf_stat['cpu_count'], site_name, inf_stat['tosca_name'],
+                                        inf_stat['last_date'], inf_stat['deleted']))
 
                 infs.append(1)
                 vms.append(inf_stat['vm_count'])
@@ -1814,6 +1836,7 @@ def create_app(oidc_blueprint=None):
                 cpus.append(inf_stat['cpu_count'])
                 labels.append(inf_stat['creation_date'])
                 clouds.append(site_name)
+                apps.append(inf_stat['tosca_name'])
 
             if active:
                 curr_date = datetime.datetime.strptime("%s 23:59:59" % end_date, "%Y-%m-%d %H:%M:%S")
@@ -1825,7 +1848,8 @@ def create_app(oidc_blueprint=None):
                         mems.append(inf[1] * -1.0)
                         cpus.append(inf[2] * -1)
                         clouds.append(inf[3])
-                        labels.append(inf[4])
+                        apps.append(inf[4])
+                        labels.append(inf[5])
 
             # Add an element in the last date
             infs.append(0)
@@ -1834,13 +1858,15 @@ def create_app(oidc_blueprint=None):
             cpus.append(0)
             labels.append("%s 23:59:59" % end_date)
             clouds.append("")
+            apps.append("")
 
         except Exception as ex:
             flash("Error Getting Stats: %s." % ex, 'error')
 
         return render_template('stats.html', infs=infs, vms=vms, cpus=cpus, mems=mems, labels=labels,
                                today=str(today), init_date=init_date or "", end_date=end_date or "",
-                               cloud_hosts=cloud_hosts, clouds=clouds, active=active)
+                               cloud_hosts=cloud_hosts, clouds=clouds, apps=apps, active=active,
+                               tosca_names=tosca_names)
 
     @app.route('/auth_file')
     @authorized_with_valid_token
