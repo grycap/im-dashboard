@@ -237,5 +237,24 @@
                 "public": "FloatingIP-Network"
             }
         }
+    },
+    {
+        "name": "WALTON-CLOUD",
+        "url": "https://egi.waltoncloud.eu:5000/v3",
+        "id": "14541G0",
+        "vos": {
+            "vo.access.egi.eu": "f09171e2a6b94634a95956532c51b985",
+            "vo.eurosea.marine.ie": "e324f1d37433449d94abafc1df46828f"
+        },
+        "networks": {
+            "vo.access.egi.eu": {
+                "private": "EGI_External_Net",
+                "public": "EGI_External_Net"
+            },
+            "vo.eurosea.marine.ie": {
+                "private": "EGI_External_Net",
+                "public": "EGI_External_Net"
+            }
+        }
     }
 ]
