@@ -50,7 +50,7 @@ class Settings:
         self.im_auth = config.get('IM_AUTH', None)
         self.vo_map = config.get('VO_MAP', {})
         self.extra_auth = config.get('EXTRA_AUTH', [])
-        self.vos_user_role = config.get('VOS_USER_ROLE')
+        self.vos_user_roles = config.get('VOS_USER_ROLES', [])
         self.enable_external_vault = config.get('ENABLE_EXTERNAL_VAULT', False)
         self.hide_tosca_tags = config.get('HIDE_TOSCA_TAGS', [])
         self.oaipmh_repo_name = config.get('OAIPMH_REPO_NAME', "")
