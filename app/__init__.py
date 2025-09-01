@@ -1815,7 +1815,7 @@ def create_app(oidc_blueprint=None):
                     curr_date = datetime.datetime.strptime(inf_stat['creation_date'], "%Y-%m-%d %H:%M:%S")
                     inf_list = list(inf_actives)
                     for inf in inf_list:
-                        del_time = datetime.datetime.strptime(inf[4], "%Y-%m-%d %H:%M:%S")
+                        del_time = datetime.datetime.strptime(inf[5], "%Y-%m-%d %H:%M:%S")
                         if inf[5] and del_time <= curr_date:
                             infs.append(-1)
                             vms.append(inf[0] * -1)
@@ -1841,7 +1841,7 @@ def create_app(oidc_blueprint=None):
             if active:
                 curr_date = datetime.datetime.strptime("%s 23:59:59" % end_date, "%Y-%m-%d %H:%M:%S")
                 for inf in inf_actives:
-                    del_time = datetime.datetime.strptime(inf[4], "%Y-%m-%d %H:%M:%S")
+                    del_time = datetime.datetime.strptime(inf[5], "%Y-%m-%d %H:%M:%S")
                     if inf[5] and del_time <= curr_date:
                         infs.append(-1)
                         vms.append(inf[0] * -1)
