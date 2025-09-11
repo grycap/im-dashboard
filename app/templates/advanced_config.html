@@ -208,7 +208,7 @@
        $('#divLoadingUsage').show();
        var formData = $("#depSubmit").serialize(); // Serialize all form data
        $.ajax({
-               method: "GET",
+               method: "POST",
                url: "{{ url_for('home') }}usage/" + $("#selectedCred").val() + "?template={{ selectedTemplate }}",
                data: formData, // Send serialized form data
                success : function(text)

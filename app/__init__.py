@@ -878,13 +878,13 @@ def create_app(oidc_blueprint=None):
             res_item["resource_error"] = "Error loading resources: %s" % ex
         return res_item
 
-    @app.route('/usage/<cred_id>')
+    @app.route('/usage/<cred_id>', methods=['POST'])
     @authorized_with_valid_token
     def getusage(cred_id=None):
         access_token = oidc_blueprint.session.token['access_token']
         auth_data = utils.getUserAuthData(access_token, cred, get_cred_id(), cred_id)
 
-        inputs = {k: v for (k, v) in request.args.items()
+        inputs = {k: v for (k, v) in request.form.to_dict().items()
                   if not k.startswith("extra_opts.") and k not in ["csrf_token", "infra_name"]}
 
         template = None
