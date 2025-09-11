@@ -699,7 +699,7 @@ class IMDashboardTests(unittest.TestCase):
 
         self.login(avatar)
 
-        res = self.client.get('/usage/credid?template=simple-node-disk.yml')
+        res = self.client.post('/usage/credid?template=simple-node-disk.yml')
         self.assertEqual(200, res.status_code)
         expected_res = {"cores": {"used": 1, "limit": 10, "touse": 3},
                         "ram": {"used": 1, "limit": 10, "touse": 6},
