@@ -871,6 +871,8 @@ def create_app(oidc_blueprint=None):
             if not response.ok:
                 raise Exception(response.text)
             resources = response.json()
+            if not resources:
+                res_item["resource_error"] = "Error loading resources: Empty resources"
             res_item = next(iter(resources.values()))
         except Exception as ex:
             res_item["resource_error"] = "Error loading resources: %s" % ex
