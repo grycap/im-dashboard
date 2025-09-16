@@ -721,10 +721,10 @@ def create_app(oidc_blueprint=None):
         if childs:
             childs = childs.split(",")
 
+        access_token = oidc_blueprint.session.token['access_token']
         inputs = {}
         infra_name = ""
         if inf_id:
-            access_token = oidc_blueprint.session.token['access_token']
             auth_data = utils.getIMUserAuthData(access_token, cred, get_cred_id())
             try:
                 response = im.get_inf_property(inf_id, 'tosca', auth_data)
