@@ -721,10 +721,10 @@ def create_app(oidc_blueprint=None):
         if childs:
             childs = childs.split(",")
 
+        access_token = oidc_blueprint.session.token['access_token']
         inputs = {}
         infra_name = ""
         if inf_id:
-            access_token = oidc_blueprint.session.token['access_token']
             auth_data = utils.getIMUserAuthData(access_token, cred, get_cred_id())
             try:
                 response = im.get_inf_property(inf_id, 'tosca', auth_data)
@@ -799,7 +799,7 @@ def create_app(oidc_blueprint=None):
                                selectedTemplate=selected_tosca,
                                input_values=inputs,
                                infra_name=infra_name, child_templates=child_templates,
-                               vos=utils.getVOs(session), utils=utils)
+                               vos=utils.getVOs(session), utils=utils, access_token=access_token)
 
     @app.route('/vos')
     def getvos():
@@ -871,6 +871,8 @@ def create_app(oidc_blueprint=None):
             if not response.ok:
                 raise Exception(response.text)
             resources = response.json()
+            if not resources:
+                res_item["resource_error"] = "Error loading resources: Empty resources"
             res_item = next(iter(resources.values()))
         except Exception as ex:
             res_item["resource_error"] = "Error loading resources: %s" % ex
@@ -885,17 +887,36 @@ def create_app(oidc_blueprint=None):
         inputs = {k: v for (k, v) in request.args.items()
                   if not k.startswith("extra_opts.") and k not in ["csrf_token", "infra_name"]}
 
-        with io.open(settings.toscaDir + request.args.get('template')) as stream:
-            template = yaml.full_load(stream)
-        template = set_inputs_to_template(template, inputs)
-        payload = yaml.dump(template, default_flow_style=False, sort_keys=False)
+        template = None
+        if request.args.get('template') == 'tosca.yml':
+            try:
+                if inputs.get('tosca'):
+                    template = yaml.safe_load(inputs.get('tosca'))
+                else:
+                    response = requests.get(inputs.get('tosca_url'), timeout=10)
+                    response.raise_for_status()
+                    template = yaml.safe_load(response.text)
+            except Exception as ex:
+                app.logger.error("Error loading TOSCA template: %s" % ex)
+        else:
+            with io.open(settings.toscaDir + request.args.get('template')) as stream:
+                template = yaml.full_load(stream)
+            template = set_inputs_to_template(template, inputs)
+
+        payload = None
+        if template is not None:
+            payload = yaml.dump(template, default_flow_style=False, sort_keys=False)
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             wquotas = executor.submit(_get_quotas, cred_id, auth_data)
-            wresources = executor.submit(_get_resources, payload, auth_data)
+            if payload:
+                wresources = executor.submit(_get_resources, payload, auth_data)
             # Wait for the results
             quotas = wquotas.result()
-            resources = wresources.result()
+            if payload:
+                resources = wresources.result()
+            else:
+                resources = {"resource_error": "Error loading TOSCA template"}
 
         # Initialize totals
         totals = {

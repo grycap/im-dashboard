@@ -91,6 +91,12 @@
       <input type="hidden" class="form-control" id="{{key}}" name="{{key}}" value="{{utils.generate_random_name()}}" >
     <!-- end random text type -->
 
+    <!-- access_token text type -->
+    {% elif value.tag_type == "access_token" %}
+      <input type="hidden" class="form-control" id="{{key}}" name="{{key}}" value="{{access_token}}" >
+    <!-- end access_token text type -->
+    
+
     {% endif %} <!-- end tag type if -->
 
   {% else %}
