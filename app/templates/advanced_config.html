@@ -43,7 +43,7 @@
        }
    };
 
-   var resource_types = ["cores", "ram", "instances", "floating_ips", "security_groups", "volume_storage"];
+   var resource_types = ["cores", "ram", "instances", "floating_ips", "security_groups", "volume_storage", "volumes"];
 
    for (var i = 0; i < resource_types.length; i++) {
        config[resource_types[i]] = JSON.parse(JSON.stringify(config["gen"]));;    
@@ -54,7 +54,8 @@
    config["instances"].options.plugins.title.text = "Instances"
    config["floating_ips"].options.plugins.title.text = "Float IPs"
    config["security_groups"].options.plugins.title.text = "SGs"
-   config["volume_storage"].options.plugins.title.text = "Staorage (GB)"
+   config["volume_storage"].options.plugins.title.text = "Storage (GB)"
+   config["volumes"].options.plugins.title.text = "Volumes"
 
    window.onload = function() {
        window.myPies = {};
@@ -72,6 +73,7 @@
        window.myPies["floating_ips"].options.plugins.title.text = "Float IPs"
        window.myPies["security_groups"].options.plugins.title.text = "SGs"
        window.myPies["volume_storage"].options.plugins.title.text = "Storage (GB)"
+       window.myPies["volumes"].options.plugins.title.text = "Volumes"
 
        for (var i = 0; i < resource_types.length; i++) {
            config[resource_types[i]].data = {
@@ -349,23 +351,26 @@
                    Loading Site Resource Usage Data <span class='spinner-grow spinner-grow-sm'></span>
                </div>
                <div class="row ms-2 me-2">
-                   <div class="col-md-2">
-                       <canvas id="chart-area-cores" width="110px" height="110px"></canvas>
+                   <div class="col-md-1" style="min-width: 100px;">
+                       <canvas id="chart-area-cores" width="100px" height="100px"></canvas>
                    </div>
-                   <div class="col-md-2">
-                       <canvas id="chart-area-ram" width="110px" height="110px"></canvas>
+                   <div class="col-md-1" style="min-width: 100px;">
+                       <canvas id="chart-area-ram" width="100px" height="100px"></canvas>
                    </div>
-                   <div class="col-md-2">
-                       <canvas id="chart-area-instances" width="110px" height="110px"></canvas>
+                   <div class="col-md-1" style="min-width: 100px;">
+                       <canvas id="chart-area-instances" width="100px" height="100px"></canvas>
                    </div>
-                   <div class="col-md-2">
-                       <canvas id="chart-area-volume_storage" width="110px" height="110px"></canvas>
+                   <div class="col-md-1" style="min-width: 100px;">
+                       <canvas id="chart-area-volumes" width="100px" height="100px"></canvas>
                    </div>
-                   <div class="col-md-2">
-                       <canvas id="chart-area-floating_ips" width="110px" height="110px"></canvas>
+                   <div class="col-md-1" style="min-width: 100px;">
+                       <canvas id="chart-area-volume_storage" width="100px" height="100px"></canvas>
                    </div>
-                   <div class="col-md-2">
-                       <canvas id="chart-area-security_groups" width="110px" height="110px"></canvas>
+                   <div class="col-md-1" style="min-width: 100px;">
+                       <canvas id="chart-area-floating_ips" width="100px" height="100px"></canvas>
+                   </div>
+                   <div class="col-md-1" style="min-width: 100px;">
+                       <canvas id="chart-area-security_groups" width="100px" height="100px"></canvas>
                    </div>
                </div>
                <div id="outOfResources" class="row ms-2 me-2 mt-2" style="display: none;">
