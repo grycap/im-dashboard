@@ -52,10 +52,15 @@
         "url": "https://identity.brno.openstack.cloud.e-infra.cz",
         "id": "3811G0",
         "vos": {
-            "training.egi.eu": "10875a29940b4d1bb5c0542a1dce294f"
+            "training.egi.eu": "10875a29940b4d1bb5c0542a1dce294f",
+			"vo.eosc-data-commons.eu": "5c338f6614704093991f9b6e17f54f90"
         },
         "networks": {
             "training.egi.eu": {
+                "private": "internal-ipv4-general-private",
+                "public": "external-ipv4-general-public"
+            },
+            "vo.eosc-data-commons.eu": {
                 "private": "internal-ipv4-general-private",
                 "public": "external-ipv4-general-public"
             }
