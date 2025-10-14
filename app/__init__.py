@@ -225,16 +225,19 @@ def create_app(oidc_blueprint=None):
                 account_info_json = account_info.json()
 
                 session["vos"] = None
-                if 'eduperson_entitlement' in account_info_json:
-                    session["vos"] = utils.getUserVOs(account_info_json['eduperson_entitlement'],
-                                                      settings.vos_user_roles)
+                entitlements = account_info_json.get('entitlements',
+                                                     account_info_json.get('eduperson_entitlement',
+                                                                           []))
+                if entitlements:
+                    session["vos"] = utils.getUserVOs(entitlements, settings.vos_user_roles)
 
                 if settings.oidcGroups:
                     user_groups = []
-                    if 'groups' in account_info_json:
-                        user_groups = account_info_json['groups']
-                    elif 'eduperson_entitlement' in account_info_json:
-                        user_groups = account_info_json['eduperson_entitlement']
+                    # Get user groups from possible claims
+                    for claim in ['groups', 'entitlements', 'eduperson_entitlement']:
+                        if claim in account_info_json:
+                            user_groups = account_info_json[claim]
+                            break
                     if not set(settings.oidcGroups).issubset(user_groups):
                         app.logger.debug("No match on group membership. User group membership: " +
                                          json.dumps(user_groups))
