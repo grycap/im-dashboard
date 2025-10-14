@@ -245,7 +245,7 @@
     },
     {
         "name": "INCD-ACNCA",
-        "url": "https://stratus.a.acnca.pt:5000/",
+        "url": "https://stratus.a.acnca.pt:5000",
         "id": "16199G0",
         "vos": {
             "vo.ai4eosc.eu": "6a82525cf24546d09db7e18609fef20b",
