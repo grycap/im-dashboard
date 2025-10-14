@@ -836,7 +836,7 @@ def create_app(oidc_blueprint=None):
 
         if local:
             access_token = oidc_blueprint.session.token['access_token']
-            auth_data = utils.getUserAuthData(access_token, cred, get_cred_id(), cred_id)
+            auth_data = utils.getUserAuthData(access_token, cred, get_cred_id(), cred_id, add_extra_auth=False)
             try:
                 response = im.get_cloud_images(cred_id, auth_data)
                 if not response.ok:
@@ -885,7 +885,7 @@ def create_app(oidc_blueprint=None):
     @authorized_with_valid_token
     def getusage(cred_id=None):
         access_token = oidc_blueprint.session.token['access_token']
-        auth_data = utils.getUserAuthData(access_token, cred, get_cred_id(), cred_id)
+        auth_data = utils.getUserAuthData(access_token, cred, get_cred_id(), cred_id, add_extra_auth=False)
 
         inputs = {k: v for (k, v) in request.args.items()
                   if not k.startswith("extra_opts.") and k not in ["csrf_token", "infra_name"]}
