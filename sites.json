@@ -67,18 +67,6 @@
         }
     },
     {
-        "name": "NCG-INGRID-PT",
-        "url": "https://stratus.ncg.ingrid.pt:5000",
-        "id": "12005G0",
-        "vos": {
-            "eosc-synergy.eu": "ddf0c468c8af4e0bbb9808bfc0288381",
-            "worsica.vo.incd.pt": "a53ca78c534046e5b13f4537ae698411",
-            "vo.imagine-ai.eu": "009f77df459b4a6389910e0fb20ddcaf",
-            "vo.ai4eosc.eu": "c61c1bb323414a248cb142eb6183d4b2",
-            "cloud.egi.eu": "6b042927bcfa466cb9eb56d3ea679987"
-        }
-    },
-    {
         "name": "CESGA",
         "url": "https://fedcloud-osservices.egi.cesga.es:5000",
         "id": "11548G0",
@@ -241,15 +229,6 @@
                 "private": "hisea-net",
                 "public": "FloatingIP-Network"
             }
-        }
-    },
-    {
-        "name": "INCD-ACNCA",
-        "url": "https://stratus.a.acnca.pt:5000",
-        "id": "16199G0",
-        "vos": {
-            "vo.ai4eosc.eu": "6a82525cf24546d09db7e18609fef20b",
-            "vo.access.egi.eu": "dcfe0d8381bd4a34ad7d9d426566ebb5"
         }
     }
 ]
