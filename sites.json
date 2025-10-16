@@ -90,5 +90,14 @@
                 "public": "FloatingIP-Network"
             }
         }
+    },
+    {
+        "name": "WALTON-CLOUD",
+        "url": "https://egi.waltoncloud.eu:5000",
+        "id": "14541G0",
+        "vos": {
+            "vo.access.egi.eu": "f09171e2a6b94634a95956532c51b985",
+            "vo.imagine-ai.eu": "f0e338d86f8146e1b3e7126a31aa34b3"
+        }
     }
 ]
