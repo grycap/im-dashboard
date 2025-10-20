@@ -7,14 +7,12 @@
             "eosc-synergy.eu": "d85ca93c937a4a97adf134ec2593296d",
             "demo.fedcloud.egi.eu": "10b972eed97940089b234f6257d7db72",
             "biomed": "eca73ad6a84d4c0088063505c36349ab",
-            "vo.indigo-datacloud.eu": "25cb49baedbf40a194729ff6802c8491",
             "umsa.cerit-sc.cz": "10e31299a9b548fdbe36e4dbe571168e",
             "cryoem.instruct-eric.eu": "d0ebf0fad0a04be19f93fdf794469544",
             "vo.eoscfuture-sp.panosc.eu": "c91eeff7bf7845bc901b319512f2ebdb",
             "vo.pangeo.eu": "05e0ff6e03774082aadacc75bfc1d783",
             "training.egi.eu": "eae2aa7f26334104906106bca4b82ae3",
-            "eval.c-scale.eu": "d6283bc95d5c4296abb799596867818c",
-	    "vo.enes.org": "786566209a7444f89a561172fa28e117"
+            "eval.c-scale.eu": "d6283bc95d5c4296abb799596867818c"
         },
         "networks": {
             "cryoem.instruct-eric.eu": {
@@ -29,7 +27,7 @@
                 "private": "group-project-network",
                 "public": "public-muni-147-251-21-GROUP"
             },
-	    "training.egi.eu": {
+            "training.egi.eu": {
                 "private": "auto_allocated_network",
                 "public": "public-cesnet-78-128-251-GROUP"
             },
@@ -40,10 +38,6 @@
             "in-sar-cubes.c-scale.eu": {
                 "private": "group-project-network",
                 "public": "public-muni-147-251-21-GROUP"
-            },
-            "vo.enes.org": {
-                "private": "78-128-250-pers-proj-net",
-                "public": "public-cesnet-78-128-250-PERSONAL"
             }
         }
     },
@@ -53,7 +47,7 @@
         "id": "3811G0",
         "vos": {
             "training.egi.eu": "10875a29940b4d1bb5c0542a1dce294f",
-			"vo.eosc-data-commons.eu": "5c338f6614704093991f9b6e17f54f90"
+            "vo.eosc-data-commons.eu": "5c338f6614704093991f9b6e17f54f90"
         },
         "networks": {
             "training.egi.eu": {
@@ -64,132 +58,6 @@
                 "private": "internal-ipv4-general-private",
                 "public": "external-ipv4-general-public"
             }
-        }
-    },
-    {
-        "name": "CESGA",
-        "url": "https://fedcloud-osservices.egi.cesga.es:5000",
-        "id": "11548G0",
-        "vos": {
-            "eosc-synergy.eu": "57bcb0efcba4467fa225add92fdc194c",
-            "covid19.eosc-synergy.eu": "972298c557184a2192ebc861f3184da8",
-            "o3as.data.kit.edu": "4a22f140a5fb4678aa1599fbf0b44b2f",
-            "vo.access.egi.eu": "3a8e9d966e644405bf19b536adf7743d",
-            "mswss.ui.savba.sk": "a91154f2803b4414a4f34039539833fa",
-            "lagoproject.net": "50a0ce2d050048c68bc3094b6682d837",
-	    "vo.deltares.nl": "6808ae202f6044f8aea95495ac3588b9",
-	    "vo.plocan.eu":"7d4e7efd1eab46fb949aa06c35aeb60d",
-	    "bioisi":"f6c8441325e040e39a79a41cf39d3066"
-        }
-    },
-    {
-        "name": "IFCA-LCG2",
-        "url": "https://api.cloud.ifca.es:5000",
-        "id": "7513G0",
-        "vos": {
-	    "acc-comp.egi.eu": "403847ab342247b89b0ba2ede2c82b39",
-	    "biinsight.eosc-hub.eu": "d602bda767b4490a82b2f62f9347a0f5",
-	    "covid19.eosc-synergy.eu": "e14972ead3154810a5941e511afc208c",
-	    "cryoem.instruct-eric.eu": "c7db08b907ef4f0fae73bdd6587bc79e",
-	    "d4science.org": "9170e65775964a3ba6b18d83a2ad1968",
-	    "demo.fedcloud.egi.eu": "2a7e2cd4b6dc4e609dd934964c1715c6",
-	    "dteam": "5eb8959a799240a98f4f303f5fbd80be",
-	    "ec-meloa.eu": "6b8f8974b27247adb4cc2990b81e6019",
-	    "enmr.eu": "b6b1c395b7da4e8aa1d0895bd695b0ba",
-	    "eosc-synergy.eu": "3b9754ad8c6046b4aec43ec21abe7d8c",
-	    "o3as.data.kit.edu": "352db003073549749351fad26cd55074",
-	    "opencoast.eosc-hub.eu": "4ebc1727dbed465c8ef72617a9075b4f",
-	    "seadatanet-pilot.eosc-hub.eu": "ccb3f2fe96a44c86b564a17dca9a326c",
-	    "training.egi.eu": "f1d0308880134d04964097524eace710",
-	    "vo.access.egi.eu": "999f045cb1ff4684a15ebb338af69460",
-            "vo.lifewatch.eu": "ac7bc26131d248ecb6add521e648c331",
-	    "vo.nextgeoss.eu": "13c11c4073f4456fac7df84c4eb8f85b",
-	    "vo.openbiomap.lifewatch.eu": "ac7bc26131d248ecb6add521e648c331",
-            "worsica.vo.incd.pt": "7bb9c2694f9040c68cd72cb994f5ce89",
-            "lagoproject.net": "77c86367335f4e9cb1e9ccab72d24f0a",
-	    "openrisknet.org": "6f17d8db2b07472dacf01c453753c3a8",
-	    "cos4cloud-eosc.eu": "c614975f1176494eaf6d6c389e1f3e2c"
-        }
-    },
-    {
-        "name": "BIFI",
-        "url": "https://colossus.cesar.unizar.es:5000",
-        "id": "12249G0",
-        "vos": {
-            "eosc-synergy.eu": "0c1de26753ed4311a6cefff9094ad3e3",
-            "covid19.eosc-synergy.eu": "f07679a8d4ac40379b51db4236bc3c27",
-            "o3as.data.kit.edu": "621b1977bb384beab1519713c7e695f0",
-            "worsica.vo.incd.pt": "46f55a92f3904d509d75525930d8d0eb",
-            "lagoproject.net": "21a85c6ead0346b08e22709d0422799d"
-        }
-    },
-    {
-        "name": "CETA-GRID",
-        "url": "https://controller.ceta-ciemat.es:5000",
-        "id": "7540G0",
-        "vos": {
-            "eosc-synergy.eu": "8e0f99db8b7845d38512f0ddce9049e3",
-            "covid19.eosc-synergy.eu": "4eda27e5514c496b9878e2b87a7c8515",
-            "o3as.data.kit.edu": "b8f5431e14e64c1ca2264f44ce6b0567",
-            "worsica.vo.incd.pt": "ef3e041a01a44915a3654c7c09af1fb1",
-            "fedcloud.egi.eu": "8ad2ac56f33540cdbfbd45ad5095d924",
-            "lagoproject.net": "3afddede673548a99dc5c2e819baf5a8"
-        }
-    },
-    {
-        "name": "IISAS-FedCloud",
-        "url": "https://cloud.ui.savba.sk:5000",
-        "id": "12355G0",
-        "vos": {
-            "eosc-synergy.eu": "51f736d36ce34b9ebdf196cfcabd24ee",
-            "covid19.eosc-synergy.eu": "a22bbffb007745b2934bf308b0a4d186",
-	    "mswss.ui.savba.sk": "a3684e7440aa42f287cf5e9e85ea4cae",
-	    "vo.ai4eosc.eu": "4d40037774784f22907d537070e85f42",
-	    "eosc-beyond.eu": "ea4f6084f9a74329bd77e466136fd079"
-        }
-    },
-    {
-        "name": "UPV-GRyCAP-Horsemen",
-        "url": "https://horsemen.i3m.upv.es:5000",
-        "id": "upvgrycap",
-        "vos": {
-            "EOServices-vo.indra.es": "392beb802d024d469ee85e6a92425656",
-            "saps-vo.i3m.upv.es": "e363b1b9f92d42b6944d64338edf7479"
-        }
-    },
-    {
-        "name": "UPV-GRyCAP",
-        "url": "https://menoscloud.i3m.upv.es:5000",
-        "id": "13152G0",
-        "vos": {
-            "eosc-synergy.eu": "6f84e31391024330b16d29d6ccd26932",
-            "saps-vo.i3m.upv.es": "e7608e969cfd4f49907cff17d1774898"
-        }
-    },
-    {
-        "name": "TR-FC1-ULAKBIM",
-        "url": "https://bulut.truba.gov.tr:5000",
-        "id": "13132G0",
-        "vos": {
-            "vo.enes.org": "a59bd0a9ed754941962846c4a081d6ca"
-        }
-    },
-    {
-        "name": "DESY-CC",
-        "url": "https://ccmi-api.desy.de:5000",
-        "id": "13662G0",
-        "vos": {
-            "vo.cite.gr": "cf702115862145869d78aadab4021f81"
-        }
-    },
-    {
-        "name": "IN2P3-IRES",
-        "url": "https://sbgcloud.in2p3.fr:5000",
-        "id": "7535G0",
-        "vos": {
-            "vo.lethe-project.eu": "f064d2b5f42a4704958f3bfbff7404bd",
-            "vo.operas-eu.org": "bc4fed7e87514dd884924c77cad714bc",
-            "vo.instruct.eu" : "e459576d88a141e9b5ffd52b2f4abcf4"
         }
     },
     {
@@ -204,17 +72,9 @@
         "id": "14059G0",
         "vos": {
             "eosc-synergy.eu": "8b3f809f2b0841e6b91b7f60d08da8c9",
-	    "vo.deltares.nl": "8a244d1b0d0f4f8e8c9519fae4cfc8ee",
-	    "vo.obsea.es": "277dd78e3b3b4c8caf93ad42fddaec38",
-	    "bioisi": "458f3225272243d7b1c0551d3af3f130"
-        }
-    },
-    {
-        "name": "IFCA-LCG2",
-        "url": "https://api.cloud.ifca.es:5000",
-        "id": "7513G0",
-        "vos": {
-            "vo.ai4eosc.eu": "f44e296a9ea441548456d25fb5b467c9"
+            "vo.deltares.nl": "8a244d1b0d0f4f8e8c9519fae4cfc8ee",
+            "vo.obsea.es": "277dd78e3b3b4c8caf93ad42fddaec38",
+            "bioisi": "458f3225272243d7b1c0551d3af3f130"
         }
     },
     {
@@ -229,6 +89,15 @@
                 "private": "hisea-net",
                 "public": "FloatingIP-Network"
             }
+        }
+    },
+    {
+        "name": "WALTON-CLOUD",
+        "url": "https://egi.waltoncloud.eu:5000",
+        "id": "14541G0",
+        "vos": {
+            "vo.access.egi.eu": "f09171e2a6b94634a95956532c51b985",
+            "vo.imagine-ai.eu": "f0e338d86f8146e1b3e7126a31aa34b3"
         }
     }
 ]
