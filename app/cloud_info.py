@@ -27,18 +27,17 @@ CLOUDINFO_TIMEOUT = 10
 
 def cloudinfo_call(path, retries=3, url=CLOUDINFO_URL, timeout=CLOUDINFO_TIMEOUT):
     """Basic Cloud info REST API call."""
-    data = None
     try:
         cont = 0
-        while data is None and cont < retries:
+        while cont < retries:
             cont += 1
             resp = requests.request("GET", url + path, timeout=timeout)
             if resp.status_code == 200:
                 return resp.json()
     except Exception:
-        data = {}
+        return {}
 
-    return data
+    return {}
 
 
 def get_vo_list():

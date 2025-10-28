@@ -153,7 +153,7 @@ def getCachedSiteList(force=False):
             # in case of error do not update time
             LAST_UPDATE = now
         except Exception as ex:
-            flash("Error retrieving site list from AppDB: %s" % ex, 'warning')
+            flash("Error retrieving site list from EGI IS: %s" % ex, 'warning')
 
         SITE_LIST.update(getStaticSites(force=force))
 
