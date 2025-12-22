@@ -57,6 +57,10 @@
             "vo.eosc-data-commons.eu": {
                 "private": "internal-ipv4-general-private",
                 "public": "external-ipv4-general-public"
+            },
+            "simpl-pilot.egi.eu": {
+                "private": "internal-ipv4-general-private",
+                "public": "external-ipv4-general-public"
             }
         }
     },
