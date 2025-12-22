@@ -21,6 +21,7 @@
 """Function to contact IM Service."""
 import os.path
 import requests
+from collections import OrderedDict
 
 
 class InfrastructureManager():
@@ -42,7 +43,7 @@ class InfrastructureManager():
         url = "%s/infrastructures" % self.im_url
         response = requests.get(url, headers=headers, timeout=self.timeout)
 
-        infrastructures = []
+        infrastructures = OrderedDict({})
         if not response.ok:
             raise Exception("Error retrieving infrastructure list: \n" + response.text)
         else:
