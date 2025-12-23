@@ -305,7 +305,8 @@ def create_app(oidc_blueprint=None):
                 state = vminfo["state"]
                 del vminfo["state"]
             if "provider.type" in vminfo:
-                deployment = vminfo["provider.type"]
+                img = url_for('static', filename='images/' + vminfo["provider.type"] + 'Row.png')
+                deployment = Markup('<img src="' + img + ' "/> ')
                 del vminfo["provider.type"]
             if "provider.vo" in vminfo:
                 del vminfo["provider.vo"]
