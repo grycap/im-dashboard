@@ -2,6 +2,12 @@
 {% block title %}Template{% endblock %}
 {% block content %}
 
+  <!-- Prism CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/prism.min.css') }}">
+  <!-- Prism core + YAML -->
+  <script src="{{ url_for('static', filename='js/prism-core.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/prism-yaml.min.js') }}"></script>
+
 <div class="container">
   {% include 'flashed_messages.html' %}
     <br>
@@ -21,7 +27,7 @@
         </div>
 
         <div class="card-body">
-          <pre>{{ template | safe }}</pre>
+          <pre><code class="language-yaml" id="yamlCode">{{ template | safe }}</code></pre>
         </div>
     </div>
 </div>
