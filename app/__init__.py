@@ -882,12 +882,7 @@ def create_app(oidc_blueprint=None):
             res_item["resource_error"] = "Error loading resources: %s" % ex
         return res_item
 
-    @app.route('/usage/<cred_id>', methods=['POST'])
-    @authorized_with_valid_token
-    def getusage(cred_id=None):
-        access_token = oidc_blueprint.session.token['access_token']
-        auth_data = utils.getUserAuthData(access_token, cred, get_cred_id(), cred_id, add_extra_auth=False)
-
+    def _get_template():
         inputs = {k: v for (k, v) in request.form.to_dict().items()
                   if not k.startswith("extra_opts.") and k not in ["csrf_token", "infra_name"]}
 
@@ -907,6 +902,25 @@ def create_app(oidc_blueprint=None):
                 template = yaml.full_load(stream)
             template = set_inputs_to_template(template, inputs)
 
+        return template
+
+    @app.route('/gen_template', methods=['POST'])
+    @authorized_with_valid_token
+    def gen_template():
+        template = _get_template()
+        if template is not None:
+            return Markup(yaml.dump(template, default_flow_style=False, sort_keys=False,
+                                    indent=4, allow_unicode=True, width=160))
+        else:
+            return "Error loading TOSCA template"
+
+    @app.route('/usage/<cred_id>', methods=['POST'])
+    @authorized_with_valid_token
+    def getusage(cred_id=None):
+        access_token = oidc_blueprint.session.token['access_token']
+        auth_data = utils.getUserAuthData(access_token, cred, get_cred_id(), cred_id, add_extra_auth=False)
+
+        template = _get_template()
         payload = None
         if template is not None:
             payload = yaml.dump(template, default_flow_style=False, sort_keys=False)
