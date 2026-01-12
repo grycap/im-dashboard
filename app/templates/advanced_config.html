@@ -316,7 +316,7 @@
        var formData = $("#depSubmit").serialize(); // Serialize all form data
        $.ajax({
                method: "POST",
-               url: "{{ url_for('home') }}gen_template?template={{ selectedTemplate }}",
+               url: "{{ url_for('home') }}gen_template/" + $("#selectedCred").val() + "?template={{ selectedTemplate }}",
                data: formData, // Send serialized form data
                success : function(text)
                {
@@ -436,13 +436,35 @@
                 </div>
                 </div>
                 <div class="modal-footer">
-                <a class="btn btn-secondary cancelBtn" role="button" data-bs-dismiss="modal">Close</a>
+                <a class="btn btn-info downloadBtn" id="downloadBtn"role="button" data-bs-dismiss="modal"><i class="fa fa-download"></i> Download</a>
+                <a class="btn btn-secondary cancelBtn" role="button" data-bs-dismiss="modal"><i class="fa-solid fa-xmark"></i> Close</a>
                 </form>
                 </div>
             </div>
             </div>
         </div>
 
+        <script>
+            function download(filename, text) {
+            var element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', filename);
+
+            element.style.display = 'none';
+            document.body.appendChild(element);
+
+            element.click();
+
+            document.body.removeChild(element);
+            }
+
+            document.getElementById("downloadBtn").addEventListener("click", function(){
+                var text = $("#templateContent").text();
+                var filename = "tosca.yaml";
+
+                download(filename, text);
+            }, false);
+        </script>
 
 
   </div>
