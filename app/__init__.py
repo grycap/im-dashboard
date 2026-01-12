@@ -903,7 +903,7 @@ def create_app(oidc_blueprint=None):
             template = set_inputs_to_template(template, inputs)
 
         cred_data = cred.get_cred(cred_id, get_cred_id())
-        image, _, _ = _get_image_and_nets(cred_data, cred_id, request.form.to_dict())
+        image, _, _, _ = _get_image_and_nets(cred_data, cred_id, request.form.to_dict())
         template = add_image_to_template(template, image)
 
         return template
@@ -1145,7 +1145,7 @@ def create_app(oidc_blueprint=None):
             }
             image = "%s://%s" % (protocol_map.get(cred_data['type']), image_id)
 
-        return image, priv_network_id, pub_network_id
+        return image, priv_network_id, pub_network_id, site
 
     @app.route('/submit', methods=['POST'])
     @authorized_with_valid_token
@@ -1162,7 +1162,7 @@ def create_app(oidc_blueprint=None):
         cred_data = cred.get_cred(cred_id, get_cred_id())
         access_token = oidc_blueprint.session.token['access_token']
 
-        image, priv_network_id, pub_network_id = _get_image_and_nets(cred_data, cred_id, form_data)
+        image, priv_network_id, pub_network_id, site = _get_image_and_nets(cred_data, cred_id, form_data)
 
         if not image:
             flash("No correct image specified.", "error")
