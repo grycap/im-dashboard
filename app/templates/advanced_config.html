@@ -98,6 +98,7 @@
    function changedCred() {
         var select = document.getElementById('selectedCred');
         var cred_type = select.options[select.selectedIndex].getAttribute("data-type");
+        $('#outOfResources').hide();
         if (cred_type == null) {
             // no cloud provider selected, hide everything
             $('#cloudImages').hide();
@@ -214,7 +215,7 @@
        $('#divLoadingUsage').show();
        var formData = $("#depSubmit").serialize(); // Serialize all form data
        $.ajax({
-               method: "GET",
+               method: "POST",
                url: "{{ url_for('home') }}usage/" + $("#selectedCred").val() + "?template={{ selectedTemplate }}",
                data: formData, // Send serialized form data
                success : function(text)
