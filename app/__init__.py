@@ -902,6 +902,14 @@ def create_app(oidc_blueprint=None):
                 template = yaml.full_load(stream)
             template = set_inputs_to_template(template, inputs)
 
+        childs = []
+        if 'extra_opts.childs' in request.form.to_dict():
+            childs = request.form.to_dict()['extra_opts.childs'].split(",")
+
+        for child in childs:
+            with io.open(settings.toscaDir + child) as stream:
+                template = utils.merge_templates(template, yaml.full_load(stream))
+
         cred_data = cred.get_cred(cred_id, get_cred_id())
         image, _, _, _ = _get_image_and_nets(cred_data, cred_id, request.form.to_dict())
         template = add_image_to_template(template, image)
