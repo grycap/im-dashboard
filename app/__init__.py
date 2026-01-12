@@ -903,7 +903,7 @@ def create_app(oidc_blueprint=None):
             template = set_inputs_to_template(template, inputs)
 
         cred_data = cred.get_cred(cred_id, get_cred_id())
-        image, _,_ = _get_image_and_nets(cred_data, cred_id, request.form.to_dict())
+        image, _, _ = _get_image_and_nets(cred_data, cred_id, request.form.to_dict())
         template = add_image_to_template(template, image)
 
         return template
