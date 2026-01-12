@@ -5,10 +5,18 @@ sys.path.append('.')
 
 import unittest
 import json
+import yaml
+import os
 import defusedxml.ElementTree as etree
 from app import create_app
 from urllib.parse import urlparse
 from mock import patch, MagicMock
+
+
+def read_file_as_string(file_name):
+    tests_path = os.path.dirname(os.path.abspath(__file__))
+    abs_file_path = os.path.join(tests_path, file_name)
+    return open(abs_file_path, 'r').read()
 
 
 class IMDashboardTests(unittest.TestCase):
@@ -690,12 +698,16 @@ class IMDashboardTests(unittest.TestCase):
 
     @patch("app.utils.avatar")
     @patch("app.utils.getUserAuthData")
+    @patch("app.db_cred.DBCredentials.get_cred")
+    @patch("app.utils.get_site_info")
     @patch('requests.get')
     @patch('requests.post')
-    def test_quotas(self, post, get, user_data, avatar):
+    def test_quotas(self, post, get, get_site_info, get_cred, user_data, avatar):
         user_data.return_value = "type = InfrastructureManager; token = access_token"
         get.side_effect = self.get_response
         post.side_effect = self.post_response
+        get_cred.return_value = {"id": "credid", "type": "fedcloud"}
+        get_site_info.return_value = {}, "", "vo"
 
         self.login(avatar)
 
@@ -982,3 +994,20 @@ class IMDashboardTests(unittest.TestCase):
         self.assertEqual(200, res.status_code)
         self.assertEqual(b'type = InfrastructureManager; token = access_token\n' +
                          b'id = test; username = test; password = some\\npassword', res.data)
+
+    @patch("app.db_cred.DBCredentials.get_cred")
+    @patch("app.utils.get_site_info")
+    @patch("app.utils.avatar")
+    def test_gen_template(self, avatar, get_site_info, get_cred):
+        get_cred.return_value = {"id": "credid", "type": "fedcloud"}
+        get_site_info.return_value = {"name": "test_site"}, "", "vo"
+
+        self.login(avatar)
+
+        res = self.client.post('/gen_template/credid?template=simple-node-disk.yml',
+                               data={'extra_opts.selectedImage': 'IMAGE_NAME'})
+        self.assertEqual(200, res.status_code)
+        expected_res = yaml.safe_load(read_file_as_string('../../tosca-templates/simple-node-disk.yml'))
+        node = expected_res['topology_template']['node_templates']['simple_node']
+        node["capabilities"]["os"]["properties"]["image"] = 'egi://test_site/IMAGE_NAME?vo'
+        self.assertEqual(expected_res, yaml.safe_load(res.data))
