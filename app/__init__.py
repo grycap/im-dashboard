@@ -305,7 +305,8 @@ def create_app(oidc_blueprint=None):
                 state = vminfo["state"]
                 del vminfo["state"]
             if "provider.type" in vminfo:
-                deployment = vminfo["provider.type"]
+                img = url_for('static', filename='images/' + vminfo["provider.type"] + 'Row.png')
+                deployment = Markup('<img src="' + img + ' "/> ')
                 del vminfo["provider.type"]
             if "provider.vo" in vminfo:
                 del vminfo["provider.vo"]
@@ -881,12 +882,7 @@ def create_app(oidc_blueprint=None):
             res_item["resource_error"] = "Error loading resources: %s" % ex
         return res_item
 
-    @app.route('/usage/<cred_id>', methods=['POST'])
-    @authorized_with_valid_token
-    def getusage(cred_id=None):
-        access_token = oidc_blueprint.session.token['access_token']
-        auth_data = utils.getUserAuthData(access_token, cred, get_cred_id(), cred_id, add_extra_auth=False)
-
+    def _get_template(cred_id):
         inputs = {k: v for (k, v) in request.form.to_dict().items()
                   if not k.startswith("extra_opts.") and k not in ["csrf_token", "infra_name"]}
 
@@ -906,6 +902,37 @@ def create_app(oidc_blueprint=None):
                 template = yaml.full_load(stream)
             template = set_inputs_to_template(template, inputs)
 
+        childs = []
+        if 'extra_opts.childs' in request.form.to_dict():
+            childs = request.form.to_dict()['extra_opts.childs'].split(",")
+
+        for child in childs:
+            with io.open(settings.toscaDir + child) as stream:
+                template = utils.merge_templates(template, yaml.full_load(stream))
+
+        cred_data = cred.get_cred(cred_id, get_cred_id())
+        image, _, _, _ = _get_image_and_nets(cred_data, cred_id, request.form.to_dict())
+        template = add_image_to_template(template, image)
+
+        return template
+
+    @app.route('/gen_template/<cred_id>', methods=['POST'])
+    @authorized_with_valid_token
+    def gen_template(cred_id=None):
+        template = _get_template(cred_id)
+        if template is not None:
+            return Markup(yaml.dump(template, default_flow_style=False, sort_keys=False,
+                                    indent=4, allow_unicode=True, width=160))
+        else:
+            return "Error loading TOSCA template"
+
+    @app.route('/usage/<cred_id>', methods=['POST'])
+    @authorized_with_valid_token
+    def getusage(cred_id=None):
+        access_token = oidc_blueprint.session.token['access_token']
+        auth_data = utils.getUserAuthData(access_token, cred, get_cred_id(), cred_id, add_extra_auth=False)
+
+        template = _get_template(cred_id)
         payload = None
         if template is not None:
             payload = yaml.dump(template, default_flow_style=False, sort_keys=False)
@@ -1098,21 +1125,7 @@ def create_app(oidc_blueprint=None):
 
         return template
 
-    @app.route('/submit', methods=['POST'])
-    @authorized_with_valid_token
-    def createdep():
-
-        form_data = request.form.to_dict()
-
-        app.logger.debug("Form data: " + json.dumps(request.form.to_dict()))
-
-        childs = []
-        if 'extra_opts.childs' in form_data:
-            childs = form_data['extra_opts.childs'].split(",")
-        cred_id = form_data['extra_opts.selectedCred']
-        cred_data = cred.get_cred(cred_id, get_cred_id())
-        access_token = oidc_blueprint.session.token['access_token']
-
+    def _get_image_and_nets(cred_data, cred_id, form_data):
         site = {}
         image = None
         priv_network_id = None
@@ -1139,6 +1152,25 @@ def create_app(oidc_blueprint=None):
                 'Azure': 'azr'
             }
             image = "%s://%s" % (protocol_map.get(cred_data['type']), image_id)
+
+        return image, priv_network_id, pub_network_id, site
+
+    @app.route('/submit', methods=['POST'])
+    @authorized_with_valid_token
+    def createdep():
+
+        form_data = request.form.to_dict()
+
+        app.logger.debug("Form data: " + json.dumps(request.form.to_dict()))
+
+        childs = []
+        if 'extra_opts.childs' in form_data:
+            childs = form_data['extra_opts.childs'].split(",")
+        cred_id = form_data['extra_opts.selectedCred']
+        cred_data = cred.get_cred(cred_id, get_cred_id())
+        access_token = oidc_blueprint.session.token['access_token']
+
+        image, priv_network_id, pub_network_id, site = _get_image_and_nets(cred_data, cred_id, form_data)
 
         if not image:
             flash("No correct image specified.", "error")

@@ -9,6 +9,12 @@
   <script src="{{ url_for('static', filename='chart/chart.min.js') }}"></script>
   <script src="{{ url_for('static', filename='chart/utils.js') }}"></script>
 
+  <!-- Prism CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/prism.min.css') }}">
+  <!-- Prism core + YAML -->
+  <script src="{{ url_for('static', filename='js/prism-core.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/prism-yaml.min.js') }}"></script>
+
   <script>
 
    var config = {};
@@ -100,6 +106,7 @@
             $('#siteImages').hide();
             $('#fedcloudUsage').hide();
             $('#outOfResources').hide();
+            disableSubmit();
             return;
         } else if (cred_type == 'fedcloud') {
             $('#cloudImages').hide();
@@ -297,7 +304,39 @@
 
    function activateSubmit() {
        $(".submitBtn").attr("disabled", false);
+       $(".showTemplateBtn").attr("disabled", false);
    }
+
+   function disableSubmit() {
+       $(".submitBtn").attr("disabled", true);
+       $(".showTemplateBtn").attr("disabled", true);
+   }
+
+   function showTemplate() {
+       $('#showTemplateModal').modal('show');
+       var formData = $("#depSubmit").serialize(); // Serialize all form data
+       $.ajax({
+               method: "POST",
+               url: "{{ url_for('home') }}gen_template/" + $("#selectedCred").val() + "?template={{ selectedTemplate }}",
+               data: formData, // Send serialized form data
+               success : function(text)
+               {
+                    var highlighted = '<pre><code class="language-yaml" id="yamlCode">' + text + '</code></pre>';
+                    $('#templateContent').html(highlighted);
+                    Prism.highlightAll();
+               },
+               error : function(error)
+               {
+                    $('#templateContent').text(error.responseText);
+               }
+       });
+   }
+
+    $(document).ready(function () {
+        $(".showTemplateBtn").click(function () {
+            showTemplate();
+        });
+    });
    </script>
 
 
@@ -385,6 +424,47 @@
        </div>
       </div>
 
+        <!-- Modal Show Template -->
+        <div class="modal fade" id="showTemplateModal" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">TOSCA Template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+                <div id="templateContent">
+                </div>
+                </div>
+                <div class="modal-footer">
+                <a class="btn btn-info downloadBtn" id="downloadBtn"role="button" data-bs-dismiss="modal"><i class="fa fa-download"></i> Download</a>
+                <a class="btn btn-secondary cancelBtn" role="button" data-bs-dismiss="modal"><i class="fa-solid fa-xmark"></i> Close</a>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <script>
+            function download(filename, text) {
+            var element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', filename);
+
+            element.style.display = 'none';
+            document.body.appendChild(element);
+
+            element.click();
+
+            document.body.removeChild(element);
+            }
+
+            document.getElementById("downloadBtn").addEventListener("click", function(){
+                var text = $("#templateContent").text();
+                var filename = "tosca.yaml";
+
+                download(filename, text);
+            }, false);
+        </script>
 
 
   </div>
