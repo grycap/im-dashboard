@@ -177,7 +177,8 @@
                     $('#selectedImage').append("<option value=''>No images available</option>");
                     $("#selectedImage").prop('disabled', true);
                     if (text.startsWith("Error:")) {
-                        alert(text);
+                        $('#errorMsg').text(text);
+                        $('#showErrorModal').modal('show');
                     }
                 } else {
                     $('#selectedImage').append("<option value=''> - Select one image - </option>");
@@ -200,7 +201,8 @@
                     $('#selectedSiteImage').append("<option value=''>No images available</option>");
                     $("#selectedSiteImage").prop('disabled', true);
                     if (text.startsWith("Error:")) {
-                        alert(text);
+                        $('#errorMsg').text(text);
+                        $('#showErrorModal').modal('show');
                     }
                 } else {
                     $('#selectedSiteImage').append("<option value=''> - Select one image - </option>");
@@ -265,16 +267,20 @@
                    }
                    // show error messages
                    if ("resource_error" in quotas) {
-                       alert(quotas["resource_error"]);
+                       $('#errorMsg').text(quotas["resource_error"]);
+                       $('#showErrorModal').modal('show');
                    }
                    if ("quota_error" in quotas) {
-                       alert(quotas["quota_error"]);
+                       $('#errorMsg').text(quotas["quota_error"]);
+                       $('#showErrorModal').modal('show');
                    }
                },
                error : function(error)
                {
                    $('#divLoadingUsage').hide();
                    resetPies();
+                   $('#errorMsg').text(error.responseText);
+                   $('#showErrorModal').modal('show');
                    alert(error.responseText);
                }
        });
@@ -438,6 +444,26 @@
                 </div>
                 <div class="modal-footer">
                 <a class="btn btn-info downloadBtn" id="downloadBtn"role="button" data-bs-dismiss="modal"><i class="fa fa-download"></i> Download</a>
+                <a class="btn btn-secondary cancelBtn" role="button" data-bs-dismiss="modal"><i class="fa-solid fa-xmark"></i> Close</a>
+                </div>
+            </div>
+            </div>
+        </div>
+
+
+        <!-- Modal Error -->
+        <div class="modal fade" id="showErrorModal" role="dialog">
+            <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+                <div id="errorMsg">
+                </div>
+                </div>
+                <div class="modal-footer">
                 <a class="btn btn-secondary cancelBtn" role="button" data-bs-dismiss="modal"><i class="fa-solid fa-xmark"></i> Close</a>
                 </div>
             </div>
