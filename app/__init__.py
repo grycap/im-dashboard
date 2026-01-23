@@ -52,6 +52,7 @@ from radl.radl import deploy, description, Feature
 from flask_apscheduler import APScheduler
 from flask_wtf.csrf import CSRFProtect, CSRFError
 from toscaparser.tosca_template import ToscaTemplate
+from toscaparser.common.exception import ValidationError
 from app.oaipmh.oai import OAI
 
 
@@ -911,7 +912,13 @@ def create_app(oidc_blueprint=None):
         image, _, _, _ = _get_image_and_nets(cred_data, cred_id, request.form.to_dict())
         template = add_image_to_template(template, image)
 
-        ToscaTemplate(yaml_dict_tpl=copy.deepcopy(template))
+        try:
+            ToscaTemplate(yaml_dict_tpl=copy.deepcopy(template))
+        except ValidationError as vex:
+            # Remove traces of files in the error
+            msg = str(vex)
+            parts = msg.split("\tFile ")
+            raise Exception(parts[0].replace('\t', '  '))
 
         return template
 
