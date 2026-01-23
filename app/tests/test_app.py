@@ -717,7 +717,7 @@ class IMDashboardTests(unittest.TestCase):
                         "ram": {"used": 1, "limit": 10, "touse": 6},
                         "instances": {"used": 1, "limit": 10, "touse": 2},
                         "floating_ips": {"used": 1, "limit": 10, "touse": 1},
-                        "security_groups": {"used": 1, "limit": 10, "touse": 3},
+                        "security_groups": {"used": 1, "limit": 10, "touse": 2},
                         "volumes": {"used": 1, "limit": 10, "touse": 1},
                         "volume_storage": {"used": 1, "limit": 10, "touse": 100}}
         self.assertEqual(expected_res, json.loads(res.data))
