@@ -888,15 +888,12 @@ def create_app(oidc_blueprint=None):
 
         template = None
         if request.args.get('template') == 'tosca.yml':
-            try:
-                if inputs.get('tosca'):
-                    template = yaml.safe_load(inputs.get('tosca'))
-                else:
-                    response = requests.get(inputs.get('tosca_url'), timeout=10)
-                    response.raise_for_status()
-                    template = yaml.safe_load(response.text)
-            except Exception as ex:
-                app.logger.error("Error loading TOSCA template: %s" % ex)
+            if inputs.get('tosca'):
+                template = yaml.safe_load(inputs.get('tosca'))
+            else:
+                response = requests.get(inputs.get('tosca_url'), timeout=10)
+                response.raise_for_status()
+                template = yaml.safe_load(response.text)
         else:
             with io.open(settings.toscaDir + request.args.get('template')) as stream:
                 template = yaml.full_load(stream)
@@ -914,17 +911,22 @@ def create_app(oidc_blueprint=None):
         image, _, _, _ = _get_image_and_nets(cred_data, cred_id, request.form.to_dict())
         template = add_image_to_template(template, image)
 
+        ToscaTemplate(yaml_dict_tpl=copy.deepcopy(template))
+
         return template
 
     @app.route('/gen_template/<cred_id>', methods=['POST'])
     @authorized_with_valid_token
     def gen_template(cred_id=None):
-        template = _get_template(cred_id)
-        if template is not None:
-            return Markup(yaml.dump(template, default_flow_style=False, sort_keys=False,
-                                    indent=4, allow_unicode=True, width=160))
-        else:
-            return "Error loading TOSCA template"
+        try:
+            template = _get_template(cred_id)
+            if template is not None:
+                return Markup(yaml.dump(template, default_flow_style=False, sort_keys=False,
+                                        indent=4, allow_unicode=True, width=160))
+            else:
+                return "Error loading TOSCA template"
+        except Exception as ex:
+            return f"Error loading/parsing TOSCA template: {str(ex)}"
 
     @app.route('/usage/<cred_id>', methods=['POST'])
     @authorized_with_valid_token
@@ -932,21 +934,12 @@ def create_app(oidc_blueprint=None):
         access_token = oidc_blueprint.session.token['access_token']
         auth_data = utils.getUserAuthData(access_token, cred, get_cred_id(), cred_id, add_extra_auth=False)
 
-        template = _get_template(cred_id)
-        payload = None
-        if template is not None:
-            payload = yaml.dump(template, default_flow_style=False, sort_keys=False)
-
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            wquotas = executor.submit(_get_quotas, cred_id, auth_data)
-            if payload:
-                wresources = executor.submit(_get_resources, payload, auth_data)
-            # Wait for the results
-            quotas = wquotas.result()
-            if payload:
-                resources = wresources.result()
-            else:
-                resources = {"resource_error": "Error loading TOSCA template"}
+        template = None
+        quotas = {}
+        try:
+            template = _get_template(cred_id)
+        except Exception as ex:
+            resources = {"resource_error": f"Error loading/parsing TOSCA template: {str(ex)}"}
 
         # Initialize totals
         totals = {
@@ -956,22 +949,37 @@ def create_app(oidc_blueprint=None):
             "floating_ips": 0,
             "volumes": 0,
             "volume_storage": 0,
-            "security_groups": 3  # default IM value per infrastructure
+            "security_groups": 2  # default IM value per infrastructure
         }
 
-        # Compute totals for VMs
-        for vm in resources.get("compute", []):
-            totals["instances"] += 1
-            totals["cores"] += vm.get("cpuCores", 0)
-            totals["ram"] += vm.get("memoryInMegabytes", 0)
-            totals["floating_ips"] += vm.get("publicIP", 0)
+        payload = None
+        if template is not None:
+            payload = yaml.dump(template, default_flow_style=False, sort_keys=False)
 
-        totals["ram"] = totals["ram"] / 1024.0  # Convert to GiB
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                wquotas = executor.submit(_get_quotas, cred_id, auth_data)
+                if payload:
+                    wresources = executor.submit(_get_resources, payload, auth_data)
+                # Wait for the results
+                quotas = wquotas.result()
+                if payload:
+                    resources = wresources.result()
+                else:
+                    resources = {"resource_error": "Error loading TOSCA template"}
 
-        # Compute totals for storage
-        for disk in resources.get("storage", []):
-            totals["volumes"] += 1
-            totals["volume_storage"] += disk.get("sizeInGigabytes", 0)
+            # Compute totals for VMs
+            for vm in resources.get("compute", []):
+                totals["instances"] += 1
+                totals["cores"] += vm.get("cpuCores", 0)
+                totals["ram"] += vm.get("memoryInMegabytes", 0)
+                totals["floating_ips"] += vm.get("publicIP", 0)
+
+            totals["ram"] = totals["ram"] / 1024.0  # Convert to GiB
+
+            # Compute totals for storage
+            for disk in resources.get("storage", []):
+                totals["volumes"] += 1
+                totals["volume_storage"] += disk.get("sizeInGigabytes", 0)
 
         # Update quotas with computed totals
         for key, value in totals.items():
