@@ -120,13 +120,8 @@
             $('#cloudImages').hide();
             $('#fedcloudImages').hide();
             $('#siteImages').show();
-            var tenant_id = select.options[select.selectedIndex].getAttribute("data-tenant-id");
-            if (tenant_id == "") {
-                $('#fedcloudUsage').hide();
-            } else {
-                $('#fedcloudUsage').show();
-                loadSiteInfo();
-            }
+            $('#fedcloudUsage').show();
+            loadSiteInfo();
             loadSiteImages();
         } else if (cred_type == 'OpenNebula') {
             $('#cloudImages').hide();
