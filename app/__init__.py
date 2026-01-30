@@ -1279,13 +1279,23 @@ def create_app(oidc_blueprint=None):
             flash("Error retrieving credentials: \n" + str(e), 'warning')
 
         if request.args.get('json', 0):
-            json_creds = json.dumps(creds)
+            template = request.args.get('template')
+            tag = None
+            if template:
+                tag = toscaInfo.get(template, {}).get('metadata', {}).get('tag')
+            if tag == "Container":
+                creds = [c for c in creds if c['type'] in ['Kubernetes', 'EUNodeCont']]
+            else:
+                creds = [c for c in creds if c['type'] not in ['Kubernetes', 'EUNodeCont']]
+            # Remove InfrastructureManager creds
+            creds = [c for c in creds if c['type'] != 'InfrastructureManager']
+            # Return creds without sensitive data
             to_delete = ['password', 'token', 'proxy', 'private_key', 'client_id', 'secret']
-            for elem in json_creds:
+            for elem in creds:
                 for key in to_delete:
                     if key in elem:
                         del elem[key]
-            return json_creds
+            return json.dumps(creds)
         else:
             return render_template('service_creds.html', creds=creds,
                                    vault=(settings.vault_url and settings.enable_external_vault))
