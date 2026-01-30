@@ -1285,8 +1285,10 @@ def create_app(oidc_blueprint=None):
                 tag = toscaInfo.get(template, {}).get('metadata', {}).get('tag')
             if tag == "Container":
                 creds = [c for c in creds if c['type'] in ['Kubernetes', 'EUNodeCont']]
+            elif tag == "FaaS":
+                creds = [c for c in creds if c['type'] in ['OSCAR']]
             else:
-                creds = [c for c in creds if c['type'] not in ['Kubernetes', 'EUNodeCont']]
+                creds = [c for c in creds if c['type'] not in ['Kubernetes', 'EUNodeCont', 'OSCAR']]
             # Remove InfrastructureManager creds
             creds = [c for c in creds if c['type'] != 'InfrastructureManager']
             # Return creds without sensitive data
