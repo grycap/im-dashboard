@@ -140,7 +140,7 @@ $(document).ready(function () {
 $(document).ready(function () {
     $('#selectedCred').empty();
     $('#selectedCred').append("<option value=''>Loading Cloud Sites ...</option>");
-    $.getJSON("{{url_for('manage_creds')}}?json=1", function( data ) {
+    $.getJSON("{{url_for('manage_creds')}}?json=1&template={{selectedTemplate}}", function( data ) {
         if (data.length == 0) {
             $('#selectedCred').empty();
             $('#noCloud').show();

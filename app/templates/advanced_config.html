@@ -120,13 +120,8 @@
             $('#cloudImages').hide();
             $('#fedcloudImages').hide();
             $('#siteImages').show();
-            var tenant_id = select.options[select.selectedIndex].getAttribute("data-tenant-id");
-            if (tenant_id == "") {
-                $('#fedcloudUsage').hide();
-            } else {
-                $('#fedcloudUsage').show();
-                loadSiteInfo();
-            }
+            $('#fedcloudUsage').show();
+            loadSiteInfo();
             loadSiteImages();
         } else if (cred_type == 'OpenNebula') {
             $('#cloudImages').hide();
@@ -141,6 +136,12 @@
             $('#siteImages').show();
             $('#fedcloudUsage').hide();
             loadSiteImages();
+        } else if (cred_type == 'Kubernetes' || cred_type == 'EUNodeCont') {
+            $('#cloudImages').hide();
+            $('#fedcloudImages').hide();
+            $('#siteImages').hide();
+            $('#fedcloudUsage').show();
+            loadSiteInfo();
         } else {
             if (cred_type == 'EC2') {
                 document.getElementById('imageID').setAttribute("placeholder", "Region / Image ID (e.g.: us-east-1/ami-f9f8ba9c)");
@@ -149,7 +150,7 @@
             } else {
                 document.getElementById('imageID').setAttribute("placeholder", "Image ID");
             }
-            if (cred_type == 'OSCAR' || cred_type == 'Kubernetes' || cred_type == 'EUNodeCont' || cred_type == 'Chameleon') {
+            if (cred_type == 'OSCAR' || cred_type == 'Chameleon') {
                 // OSCAR or K8s do not set images
                 $('#cloudImages').hide();
                 activateSubmit();
