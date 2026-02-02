@@ -1,6 +1,6 @@
 <div>
   {% if value.tag_type is not defined or value.tag_type not in ["hidden", "random"] %}
-  <label for="{{key}}" style="white-space: pre-wrap;">{% if value.description is defined %}{{value.description}}{% else %}{{key}}{% endif %}</label>
+  <label for="{{key}}" style="white-space: pre-wrap;pointer-events: none;">{% if value.description is defined %}{{value.description}}{% else %}{{key}}{% endif %}</label>
   {% endif %}
 
   {% set min_length = value.constraints | selectattr('min_length') | map(attribute='min_length') | list  %}
@@ -57,8 +57,16 @@
 
     <!-- toggle type -->
     {% elif value.tag_type == "toggle" %}
-      <div class="form-check form-switch" style="margin-bottom: 0.5rem;">
-        <input class="form-check-input" style="width: 3rem; height: 1.5rem;" type="checkbox" role="switch" data-bs-toggle="toggle" id="{{key}}" name="{{key}}" data-size="sm" data-offstyle="dark" value="True" {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%} switch>
+      <div class="form-check form-switch" style="margin-bottom: 0.5rem;{% if value.constraints and (value.constraints | length == 1) %} pointer-events: none;{% endif %}">
+        <input class="form-check-input" style="width: 3rem; height: 1.5rem;"
+               type="checkbox" role="switch" data-bs-toggle="toggle"
+               id="{{key}}" name="{{key}}" data-size="sm"
+               data-offstyle="dark"
+               {% if input_value == True%}checked{%endif%}
+               value="True"
+               {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}
+               switch>
+        <input type="hidden" name="{{key}}" value="False">
       </div>
     <!-- end toggle type -->
 
