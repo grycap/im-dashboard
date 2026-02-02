@@ -75,5 +75,61 @@
   return valid;
 });
 
+// Manejar habilitación condicional basada en enabled_by
+
+function setupEnabledByLogic() {
+  const inputsWithEnabledBy = document.querySelectorAll('[data-enabled-by]');
+
+  // Loguear todos los inputs para ver su estructura
+  const allInputs = document.querySelectorAll('input[id], textarea[id], select[id]');
+  allInputs.forEach(function(elem) {
+    const hasEnabledBy = elem.hasAttribute('data-enabled-by');
+    const enabled = !elem.hasAttribute('disabled');
+  });
+
+  inputsWithEnabledBy.forEach(function(input) {
+    const enabledByFieldId = input.getAttribute('data-enabled-by');
+    const enabledByField = document.getElementById(enabledByFieldId);
+
+    if (enabledByField) {
+      // Función para actualizar el estado del input
+
+      function updateInputState() {
+        let isEnabled = false;
+
+        // Para checkboxes/toggles, verificar el estado checked
+        if (enabledByField.type === 'checkbox' || enabledByField.type === 'radio') {
+          isEnabled = enabledByField.checked;
+        // Para otros tipos, verificar si el valor es truthy
+        } else {
+          const val = enabledByField.value;
+          isEnabled = val === 'true' || val === 'True' || val === true || val === '1' || (val && val !== '0' && val !== 'false');
+        }
+
+        if (isEnabled) {
+          input.removeAttribute('disabled');
+        } else {
+          input.setAttribute('disabled', 'disabled');
+        }
+      }
+
+      // Inicializar el estado
+      updateInputState();
+
+      // Escuchar cambios en el campo habilitador - múltiples eventos
+      enabledByField.addEventListener('change', function(e) {
+        updateInputState();
+      });
+
+      enabledByField.addEventListener('input', function(e) {
+        updateInputState();
+      });
+    }
+  });
+}
+
+// Ejecutar la configuración al cargar la página
+setupEnabledByLogic();
+
 
 </script>
