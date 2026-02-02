@@ -382,6 +382,7 @@ def _addTabs(tabs, toscaInfo, tosca):
                 if "enabled_by" in input_params:
                     toscaInfo[tosca]['inputs'][input_name]["enabled_by"] = input_params["enabled_by"]
 
+
 def _addAddons(toscaInfo, toscaDir):
     # Add addons to description
     for tosca in toscaInfo.keys():
