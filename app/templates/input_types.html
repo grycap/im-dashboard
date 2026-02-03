@@ -35,21 +35,6 @@
       <input type="password" class="form-control" id="{{key}}" name="{{key}}" placeholder="Enter your password" {% if value.required %}required{%endif%} {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%} >
     <!-- end password type -->
 
-    <!-- toggle type -->
-    {% elif value.tag_type == "toggle" %}
-      <div class="form-check form-switch" style="margin-bottom: 0.5rem;{% if constraints and (constraints[0] | length == 1) %} pointer-events: none;{% endif %}">
-        <input class="form-check-input" style="width: 3rem; height: 1.5rem;"
-               type="checkbox" role="switch" data-bs-toggle="toggle"
-               id="{{key}}" name="{{key}}" data-size="sm"
-               data-offstyle="dark"
-               {% if input_value == True%}checked{%endif%}
-               value="True"
-               {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}
-               switch>
-        <input type="hidden" name="{{key}}" value="False">
-      </div>
-    <!-- end toggle type -->
-
     <!-- userid type -->
     {% elif value.tag_type == "userid" %}
     <input type="text" class="form-control" id="{{key}}" name="{{key}}" value="{{session['userid']}}" aria-describedby="help{{key}}" readonly/>
@@ -87,8 +72,23 @@
 
   {% else %}
 
+    <!-- boolean type -->
+    {% if value.type == "boolean" %}
+      <div class="form-check form-switch" style="margin-bottom: 0.5rem;{% if constraints and (constraints[0] | length == 1) %} pointer-events: none;{% endif %}">
+        <input class="form-check-input" style="width: 3rem; height: 1.5rem;"
+               type="checkbox" role="switch" data-bs-toggle="toggle"
+               id="{{key}}" name="{{key}}" data-size="sm"
+               data-offstyle="dark"
+               {% if input_value == True%}checked{%endif%}
+               value="True"
+               {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}
+               switch>
+        <input type="hidden" name="{{key}}" value="False">
+      </div>
+    <!-- end boolean type -->
+
 	  <!-- select type if constraints are defined -->
-	  {% if constraints %}
+	  {% elif constraints %}
 	  <select class="js-example-basic-single js-states form-control" id="{{key}}" name="{{key}}" {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}>
           {% for val in constraints[0] %}
              <option {% if input_value == val%}selected{%endif%} value="{{val}}">{{val}}</option>
