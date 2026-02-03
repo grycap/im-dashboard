@@ -1,22 +1,23 @@
 <div>
   {% if value.tag_type is not defined or value.tag_type not in ["hidden", "random"] %}
-  <label for="{{key}}" style="white-space: pre-wrap;">{% if value.description is defined %}{{value.description}}{% else %}{{key}}{% endif %}</label>
+  <label for="{{key}}" style="white-space: pre-wrap;pointer-events: none;">{% if value.description is defined %}{{value.description}}{% else %}{{key}}{% endif %}</label>
   {% endif %}
 
   {% set min_length = value.constraints | selectattr('min_length') | map(attribute='min_length') | list  %}
   {% set max_length = value.constraints | selectattr('max_length') | map(attribute='max_length') | list  %}
   {% set input_value = input_values[key] | default(value.default, true)  %}
+  {% set constraints = value.constraints | selectattr('valid_values') | map(attribute='valid_values') | list  %}
 
   {% if value.tag_type is defined %}
 
     <!-- text type -->
     {% if value.tag_type == "text" %}
-      <input type="text" class="form-control" id="{{key}}" name="{{key}}" value="{{input_value}}" aria-describedby="help{{key}}" {% if value.required %}required{%endif%} {% if min_length %}minlength="{{min_length[0]}}"{%endif%} {% if max_length %}maxlength="{{max_length[0]}}"{%endif%} {% if value.pattern is defined %}pattern="{{value.pattern}}"{%endif%}/>
+      <input type="text" class="form-control" id="{{key}}" name="{{key}}" value="{{input_value}}" aria-describedby="help{{key}}" {% if value.required %}required{%endif%} {% if min_length %}minlength="{{min_length[0]}}"{%endif%} {% if max_length %}maxlength="{{max_length[0]}}"{%endif%} {% if value.pattern is defined %}pattern="{{value.pattern}}"{%endif%} {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}/>
     <!-- end select type -->
 
     <!-- hidden text type -->
     {% elif value.tag_type == "textarea" %}
-      <textarea class="form-control" id="{{key}}" name="{{key}}" cols="40" rows="5" aria-describedby="help{{key}}" {% if value.required %}required{%endif%}>{{input_value}}</textarea>
+      <textarea class="form-control" id="{{key}}" name="{{key}}" cols="40" rows="5" aria-describedby="help{{key}}" {% if value.required %}required{%endif%} {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}>{{input_value}}</textarea>
     <!-- end hidden text type -->
 
     <!-- hidden text type -->
@@ -26,43 +27,13 @@
 
     <!-- email type -->
     {% elif value.tag_type == "email" %}
-      <input type="email" class="form-control" id="{{key}}" name="{{key}}" value="{{input_value}}" placeholder="Enter your email" {% if value.required %}required{%endif%} >
+      <input type="email" class="form-control" id="{{key}}" name="{{key}}" value="{{input_value}}" placeholder="Enter your email" {% if value.required %}required{%endif%} {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%} >
     <!-- end email type -->
 
     <!-- password type -->
     {% elif value.tag_type == "password" %}
-      <input type="password" class="form-control" id="{{key}}" name="{{key}}" placeholder="Enter your password" {% if value.required %}required{%endif%} >
+      <input type="password" class="form-control" id="{{key}}" name="{{key}}" placeholder="Enter your password" {% if value.required %}required{%endif%} {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%} >
     <!-- end password type -->
-
-    <!-- select type -->
-    <!-- https://github.com/select2/select2/issues/4220 -->
-    {% elif value.tag_type == "select" %}
-      <select class="js-example-basic-single js-states form-control" id="{{key}}" name="{{key}}">
-      {% for constraint in value.constraints %}
-        <option {% if input_value == constraint['value']%}selected{%endif%} value="{{constraint['value']}}">{{constraint['label']}}</option>
-      {% endfor %}
-      </select>
-    <!-- end select type -->
-
-    <!-- radio type -->
-    {% elif value.tag_type == "radio" %}
-      {% for constraint in value.constraints %}
-        {% if loop.first %}
-          <br><input type="radio" id="{{key}}" name="{{key}}" value={{constraint['value']}} checked> {{constraint['label']}}<br>
-        {% else %}
-          <input type="radio" id="{{key}}" name="{{key}}" value={{constraint['value']}}> {{constraint['label']}}<br>
-        {% endif %}
-      {% endfor %}
-    <!-- end radio type -->
-
-    <!-- toggle type -->
-    {% elif value.tag_type == "toggle" %}
-      {% for constraint in value.constraints %}
-      <div>
-        <input type="checkbox" data-bs-toggle="toggle" id="{{key}}" name="{{key}}" data-size="sm" data-offstyle="dark" value={{constraint['value']}}>
-      </div>
-      {% endfor %}
-    <!-- end toggle type -->
 
     <!-- userid type -->
     {% elif value.tag_type == "userid" %}
@@ -101,10 +72,24 @@
 
   {% else %}
 
+    <!-- boolean type -->
+    {% if value.type == "boolean" %}
+      <div class="form-check form-switch" style="margin-bottom: 0.5rem;{% if constraints and (constraints[0] | length == 1) %} pointer-events: none;{% endif %}">
+        <input class="form-check-input" style="width: 3rem; height: 1.5rem;"
+               type="checkbox" role="switch" data-bs-toggle="toggle"
+               id="{{key}}" name="{{key}}" data-size="sm"
+               data-offstyle="dark"
+               {% if input_value == True%}checked{%endif%}
+               value="True"
+               {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}
+               switch>
+        <input type="hidden" name="{{key}}" value="False">
+      </div>
+    <!-- end boolean type -->
+
 	  <!-- select type if constraints are defined -->
-	  {% set constraints = value.constraints | selectattr('valid_values') | map(attribute='valid_values') | list  %}
-	  {% if constraints %}
-	  <select class="js-example-basic-single js-states form-control" id="{{key}}" name="{{key}}">
+	  {% elif constraints %}
+	  <select class="js-example-basic-single js-states form-control" id="{{key}}" name="{{key}}" {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}>
           {% for val in constraints[0] %}
              <option {% if input_value == val%}selected{%endif%} value="{{val}}">{{val}}</option>
           {% endfor %}
@@ -129,12 +114,12 @@
       {% set min_value = value.constraints | selectattr('greater_than') | map(attribute='greater_than') | list  %}
       {% set max_value = value.constraints | selectattr('less_than') | map(attribute='less_than') | list  %}
       <!-- number type -->
-      <input type="number" class="form-control" id="{{key}}" name="{{key}}" value="{{input_value}}" aria-describedby="help{{key}}" {% if value.required %}required{%endif%} {% if min_value %}min="{{min_value[0]}}"{%endif%} {% if max_value %}max="{{max_value[0]}}"{%endif%}/>
+      <input type="number" class="form-control" id="{{key}}" name="{{key}}" value="{{input_value}}" aria-describedby="help{{key}}" {% if value.required %}required{%endif%} {% if min_value %}min="{{min_value[0]}}"{%endif%} {% if max_value %}max="{{max_value[0]}}"{%endif%} {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}/>
       {% elif value.type == "scalar-unit.size" %}
-      <input type="text" class="form-control" id="{{key}}" name="{{key}}" value="{{input_value}}" pattern="[0-9]*( )[TMG]i{0,1}B" title="Number Unit(MB, GB or TB)">
+      <input type="text" class="form-control" id="{{key}}" name="{{key}}" value="{{input_value}}" pattern="[0-9]*( )[TMG]i{0,1}B" title="Number Unit(MB, GB or TB)" {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}>
       {% else %}
 	    <!-- text type, hide fields with password -->
-      <input {% if 'password' in key %}type="password"{% else %}type="text"{% endif %} class="form-control" id="{{key}}" name="{{key}}" value="{{input_value}}" aria-describedby="help{{key}}" {% if value.required %}required{%endif%} {% if min_length %}minlength="{{min_length[0]}}"{%endif%} {% if max_length %}maxlength="{{max_length[0]}}"{%endif%}/>
+      <input {% if 'password' in key %}type="password"{% else %}type="text"{% endif %} class="form-control" id="{{key}}" name="{{key}}" value="{{input_value}}" aria-describedby="help{{key}}" {% if value.required %}required{%endif%} {% if min_length %}minlength="{{min_length[0]}}"{%endif%} {% if max_length %}maxlength="{{max_length[0]}}"{%endif%} {% if value.pattern is defined %}pattern="{{value.pattern}}"{%endif%} {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}/>
       {% endif %}
     {% endif %}
     
