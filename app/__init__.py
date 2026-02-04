@@ -911,6 +911,7 @@ def create_app(oidc_blueprint=None):
         cred_data = cred.get_cred(cred_id, get_cred_id())
         image, _, _, _ = _get_image_and_nets(cred_data, cred_id, request.form.to_dict())
         template = add_image_to_template(template, image)
+        template = remove_unnecessary_metadata(template)
 
         try:
             ToscaTemplate(yaml_dict_tpl=copy.deepcopy(template))
@@ -1170,6 +1171,14 @@ def create_app(oidc_blueprint=None):
 
         return image, priv_network_id, pub_network_id, site
 
+    def remove_unnecessary_metadata(template):
+        if 'metadata' in template:
+            unnecessary_fields = ['icon', 'order', 'tabs', 'childs', 'parents']
+            for field in unnecessary_fields:
+                if field in template['metadata']:
+                    del template['metadata'][field]
+        return template
+
     @app.route('/submit', methods=['POST'])
     @authorized_with_valid_token
     def createdep():
@@ -1239,6 +1248,8 @@ def create_app(oidc_blueprint=None):
         app.logger.debug("Parameters: " + json.dumps(inputs))
 
         template = set_inputs_to_template(template, inputs)
+
+        template = remove_unnecessary_metadata(template)
 
         payload = yaml.dump(template, default_flow_style=False, sort_keys=False)
 
