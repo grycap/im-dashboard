@@ -1010,4 +1010,11 @@ class IMDashboardTests(unittest.TestCase):
         expected_res = yaml.safe_load(read_file_as_string('../../tosca-templates/simple-node-disk.yml'))
         node = expected_res['topology_template']['node_templates']['simple_node']
         node["capabilities"]["os"]["properties"]["image"] = 'egi://test_site/IMAGE_NAME?vo'
+
+        if 'metadata' in expected_res:
+            unnecessary_fields = ['icon', 'order', 'tabs', 'childs', 'parents']
+            for field in unnecessary_fields:
+                if field in expected_res['metadata']:
+                    del expected_res['metadata'][field]
+
         self.assertEqual(expected_res, yaml.safe_load(res.data))
