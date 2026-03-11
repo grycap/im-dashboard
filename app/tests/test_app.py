@@ -105,7 +105,8 @@ class IMDashboardTests(unittest.TestCase):
         elif url == "/im/infrastructures/infid/outputs":
             resp.ok = True
             resp.status_code = 200
-            resp.json.return_value = {"outputs": {"key": "value", "key2": "http://server.com"}}
+            resp.json.return_value = {"outputs": {"key": "value", "key2": "http://server.com",
+                                                   "key3": "https://[server2.com,server3.com]/path"}}
         elif url == "/im/infrastructures/infid/radl":
             resp.ok = True
             resp.status_code = 200
@@ -456,6 +457,8 @@ class IMDashboardTests(unittest.TestCase):
         self.assertIn(b'key2', res.data)
         self.assertIn(b'value', res.data)
         self.assertIn(b"<a href='http://server.com' target='_blank'>http://server.com</a>", res.data)
+        self.assertIn(b"<a href='http://server2.com' target='_blank'>http://server2.com</a>", res.data)
+        self.assertIn(b"<a href='http://server3.com' target='_blank'>http://server3.com</a>", res.data)
 
     @patch("app.utils.getUserAuthData")
     @patch('requests.delete')
