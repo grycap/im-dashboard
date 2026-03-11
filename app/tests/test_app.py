@@ -106,7 +106,7 @@ class IMDashboardTests(unittest.TestCase):
             resp.ok = True
             resp.status_code = 200
             resp.json.return_value = {"outputs": {"key": "value", "key2": "http://server.com",
-                                                   "key3": "https://[server2.com,server3.com]/path"}}
+                                                  "key3": "https://[server2.com,server3.com]/path"}}
         elif url == "/im/infrastructures/infid/radl":
             resp.ok = True
             resp.status_code = 200
