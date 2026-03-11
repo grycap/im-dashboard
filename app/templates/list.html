@@ -78,7 +78,7 @@ function addItem_{{key}}(object=null, value='') {
   {% else %}
     input_template = `
         <div class="col col-md-11 ps-0">
-            <input type="text" class="form-control" name="${tagname}_list_value_${num__{{key}}}" class="form-control" required pattern="${pattern}" value="${value}">
+            <input type="text" class="form-control" name="${tagname}_list_value_${num__{{key}}}" class="form-control" pattern="${pattern}" value="${value}">
         </div>`;
   {% endif %}
 
