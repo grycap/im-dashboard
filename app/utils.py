@@ -379,6 +379,8 @@ def _addTabs(tabs, toscaInfo, tosca):
                     toscaInfo[tosca]['inputs'][input_name]["tag_type"] = input_params["tag_type"]
                 if "pattern" in input_params:
                     toscaInfo[tosca]['inputs'][input_name]["pattern"] = input_params["pattern"]
+                if "enabled_by" in input_params:
+                    toscaInfo[tosca]['inputs'][input_name]["enabled_by"] = input_params["enabled_by"]
 
 
 def _addAddons(toscaInfo, toscaDir):
@@ -997,6 +999,8 @@ def getReconfigureInputs(template_str):
                     elem["tag_type"] = input_params["tag_type"]
                 if "pattern" in input_params:
                     elem["pattern"] = input_params["pattern"]
+                if "enabled_by" in input_params:
+                    elem["enabled_by"] = input_params["enabled_by"]
 
                 if "reconfigure" in input_params and input_params["reconfigure"]:
                     if tab not in inputs:

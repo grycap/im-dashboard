@@ -94,5 +94,13 @@
                 "public": "FloatingIP-Network"
             }
         }
+    },
+    {
+        "name": "TR-FC1-ULAKBIM",
+        "url": "https://bulut.truba.gov.tr:5000",
+        "id": "13132G0",
+        "vos": {
+            "vo.eosc-data-commons.eu": "ddd598f2b38b4d6cbe32cb05d7f80682"
+        }
     }
 ]

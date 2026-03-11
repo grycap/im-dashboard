@@ -16,7 +16,7 @@ ENV PYTHONPATH=/app
 
 RUN apk add --no-cache mariadb-dev
 RUN apk add --no-cache --virtual build-deps gcc python3-dev musl-dev
-RUN pip3 install --no-cache-dir gunicorn==23.0.0 && pip3 install --no-cache-dir -r /app/requirements.txt
+RUN pip3 install --no-cache-dir gunicorn==24.1.1 && pip3 install --no-cache-dir -r /app/requirements.txt
 RUN apk del build-deps
 
 EXPOSE 5001
