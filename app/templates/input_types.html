@@ -1,6 +1,6 @@
 <div>
   {% if value.tag_type is not defined or value.tag_type not in ["hidden", "random"] %}
-  <label for="{{key}}" style="white-space: pre-wrap;">{% if value.description is defined %}{{value.description |safe}}{% else %}{{key}}{% endif %}</label>
+  <label for="{{key}}" style="white-space: pre-wrap;{% if value.type == "boolean" %}pointer-events: none{%endif%}">{% if value.description is defined %}{{value.description |safe}}{% else %}{{key}}{% endif %}</label>
 
   {% endif %}
 
