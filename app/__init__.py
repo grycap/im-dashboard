@@ -695,6 +695,22 @@ def create_app(oidc_blueprint=None):
 
         return render_template('inflog.html', log=log, vmid=vmid, vms=0)
 
+    def _format_link_output(output):
+        # Handle URLs with a Python list as host: https://['host1', 'host2']/path
+        list_match = re.match(r"^(https?://)\[([^\]]+)\](.*)$", output)
+        if list_match:
+            scheme = list_match.group(1)
+            hosts_str = list_match.group(2)
+            path = list_match.group(3)
+            hosts = re.findall(r"['\"]([^'\"]+)['\"]", hosts_str)
+            links = " ".join(
+                "<a href='%s%s%s' target='_blank'>%s%s%s</a></br>" % (scheme, h, path, scheme, h, path)
+                for h in hosts
+            )
+            return Markup(links)
+        else:
+            return Markup("<a href='%s' target='_blank'>%s</a>" % (output, output))
+
     @app.route('/outputs/<infid>')
     @authorized_with_valid_token
     def infoutputs(infid=None):
@@ -711,7 +727,7 @@ def create_app(oidc_blueprint=None):
             for elem in outputs:
                 if isinstance(outputs[elem], str) and (outputs[elem].startswith('http://') or
                                                        outputs[elem].startswith('https://')):
-                    outputs[elem] = Markup("<a href='%s' target='_blank'>%s</a>" % (outputs[elem], outputs[elem]))
+                    outputs[elem] = _format_link_output(outputs[elem])
         except Exception as ex:
             flash("Error: %s." % ex, 'error')
 

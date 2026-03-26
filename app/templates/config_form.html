@@ -118,5 +118,17 @@ function setupEnabledByLogic() {
 // Ejecutar la configuración al cargar la página
 setupEnabledByLogic();
 
+// Function to reset selected credentials when leaving the advanced tab
+ $('.nav-tabs a').on('hide.bs.tab', function(e){
+  var tab_id = e.delegateTarget.getAttribute('data-id')
+
+  // Check if the current tab is "tabAdvanced"
+  if (tab_id === "#Advanced") {
+    // if we are leaving the advanced tab, we need to reset the selected credentials
+    $('#selectedCred').val('').trigger('change');
+  }
+  return true;
+});
+
 
 </script>
