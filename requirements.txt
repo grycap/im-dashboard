@@ -13,6 +13,6 @@ Flask-WTF==1.2.2
 hvac==2.4.0
 tosca-parser @ git+https://github.com/micafer/tosca-parser.git@im
 mysqlclient==2.2.8
-lxml==6.0.2
+lxml==6.1.0
 defusedxml==0.7.1
 paramiko==4.0.0
