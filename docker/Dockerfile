@@ -15,9 +15,9 @@ RUN apk add --no-cache git && \
 ENV PYTHONPATH=/app
 
 RUN apk add --no-cache mariadb-dev
-RUN apk add --no-cache --virtual build-deps gcc python3-dev musl-dev
-RUN pip3 install --no-cache-dir gunicorn==24.1.1 && pip3 install --no-cache-dir -r /app/requirements.txt
-RUN apk del build-deps
+RUN apk add --no-cache --virtual build-deps gcc python3-dev musl-dev git
+RUN pip3 install --no-cache-dir granian==2.7.4 && pip3 install --no-cache-dir -r /app/requirements.txt
+RUN apk del build-deps git
 
 EXPOSE 5001
 
