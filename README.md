@@ -20,7 +20,7 @@ Functionalities:
 
 The im-dashboard is a Python application built with the [Flask](http://flask.pocoo.org/) microframework; [Flask-Dance](https://flask-dance.readthedocs.io/en/latest/) is used for Openid-Connect/OAuth2 integration.
 
-The docker image uses [Gunicorn](https://gunicorn.org/) as WSGI HTTP server to serve the Flask Application.
+The docker image uses [Granian](https://github.com/emmett-framework/granian) as WSGI HTTP server to serve the Flask Application.
 
 ## Achievements
 
@@ -163,7 +163,7 @@ server {
   ssl_trusted_certificate   /etc/nginx/trusted_ca_cert.pem;
 
   location / {
-                # Pass the request to Gunicorn
+                # Pass the request to Granian
                 proxy_pass http://127.0.0.1:5001/;
 
                 proxy_set_header        X-Real-IP $remote_addr;
@@ -192,6 +192,7 @@ Access the dashboard at `https://<PROXY_HOST>/`
 
 ### Performance tuning
 
-You can change the number of gunicorn worker processes using the environment variable WORKERS.
+You can change the number of granian worker processes using the environment variable WORKERS.
 E.g. if you want to use 2 workers, launch the container with the option `-e WORKERS=2`
-Check the [documentation](http://docs.gunicorn.org/en/stable/design.html#how-many-workers) for ideas on tuning this parameter.
+Check the [documentation](https://github.com/emmett-framework/granian/blob/master/README.md#options)
+for ideas on tuning this parameter.
