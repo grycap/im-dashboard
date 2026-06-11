@@ -21,7 +21,7 @@
 
                       {% else %}
                         {% if value is string %}
-                          {% if value|length > 1024 %}
+                          {% if value|length > 1024 or value|length > 256 and '\n' in value %}
                             <div class="d-none" id="text-val-{{ field }}">{{ value | replace("\\n", "\n") }}</div>
                             <button class="btn btn-primary btn-sm" id="downloadBtn{{ field }}"><i class="fa fa-download"></i> Download</button>
                             <script>
