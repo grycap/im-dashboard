@@ -336,9 +336,40 @@ def create_app(oidc_blueprint=None):
                     nets += Markup(' <span class="badge bg-secondary">%s</span>' % cont)
                     nets += ": %s" % vminfo["net_interface.%s.ip" % cont]
                     del vminfo["net_interface.%s.ip" % cont]
+
+                    num_dns = 0
                     if "net_interface.%s.dns_name" % cont in vminfo:
-                        nets += " (%s)" % vminfo["net_interface.%s.dns_name" % cont]
+                        nets += " (%s" % vminfo["net_interface.%s.dns_name" % cont]
                         del vminfo["net_interface.%s.dns_name" % cont]
+                        if "net_interface.%s.dns.%d.name" % (cont, num_dns) in vminfo:
+                            del vminfo["net_interface.%s.dns.%d.name" % (cont, num_dns)]
+                        # Del also TLS fields if present
+                        if "net_interface.%s.dns.%d.tls" % (cont, num_dns) in vminfo:
+                            del vminfo["net_interface.%s.dns.%d.tls" % (cont, num_dns)]
+                        if "net_interface.%s.dns.%d.tls.private_key" % (cont, num_dns) in vminfo:
+                            del vminfo["net_interface.%s.dns.%d.tls.private_key" % (cont, num_dns)]
+                        if "net_interface.%s.dns.%d.tls.certificate" % (cont, num_dns) in vminfo:
+                            del vminfo["net_interface.%s.dns.%d.tls.certificate" % (cont, num_dns)]
+                        num_dns += 1
+
+                    # Use new format for DNS names if available
+                    while "net_interface.%s.dns.%d.name" % (cont, num_dns) in vminfo:
+                        if num_dns > 0:
+                            nets += ","
+                        else:
+                            nets += " ("
+                        nets += "%s" % vminfo["net_interface.%s.dns.%d.name" % (cont, num_dns)].replace("@", ".")
+                        del vminfo["net_interface.%s.dns.%d.name" % (cont, num_dns)]
+                        # Del also TLS fields if present
+                        if "net_interface.%s.dns.%d.tls" % (cont, num_dns) in vminfo:
+                            del vminfo["net_interface.%s.dns.%d.tls" % (cont, num_dns)]
+                        if "net_interface.%s.dns.%d.tls.private_key" % (cont, num_dns) in vminfo:
+                            del vminfo["net_interface.%s.dns.%d.tls.private_key" % (cont, num_dns)]
+                        if "net_interface.%s.dns.%d.tls.certificate" % (cont, num_dns) in vminfo:
+                            del vminfo["net_interface.%s.dns.%d.tls.certificate" % (cont, num_dns)]
+                        num_dns += 1
+                    if num_dns > 0:
+                        nets += ")"
 
                     if ("net_interface.%s.additional_dns_names" % cont in vminfo and
                             vminfo["net_interface.%s.additional_dns_names" % cont]):
