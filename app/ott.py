@@ -19,6 +19,7 @@
 # specific language governing permissions and limitations
 # under the License.
 """Class to manage data using One Time Tokens (OTT)."""
+import base64
 import hvac
 from uuid import uuid4
 
@@ -54,7 +55,10 @@ class OneTimeTokenData():
         client = hvac.Client(url=self.vault_url, token=locker_token)
         if command == "read_secret":
             resp = client.read(self.VAULT_LOCKER_MOUNT_POINT + path)
-            return resp.get("data").get("data").replace("\\n", "\n")
+            data = resp.get("data").get("data")
+            if isinstance(data, dict) and data.get("encoding") == "base64":
+                return base64.b64decode(data.get("data", ""))
+            return data.replace("\\n", "\n")
         elif command == "put":
             resp = client.write(self.VAULT_LOCKER_MOUNT_POINT + path, data=data)
             return None
@@ -68,6 +72,8 @@ class OneTimeTokenData():
         if path is None:
             # Generate a random path
             path = str(uuid4())
+        if isinstance(data, bytes):
+            data = {"encoding": "base64", "data": base64.b64encode(data).decode()}
         self.locker_client(token, "put", path, data)
         return token, path
 
