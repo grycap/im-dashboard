@@ -930,8 +930,16 @@ def create_app(oidc_blueprint=None):
             res_item["resource_error"] = "Error loading resources: %s" % ex
         return res_item
 
+    def _get_form_data_with_file_contents():
+        form_data = request.form.to_dict()
+        for key, file_storage in request.files.items():
+            if file_storage and file_storage.filename:
+                form_data[key] = file_storage.read().decode()
+        return form_data
+
     def _get_template(cred_id):
-        inputs = {k: v for (k, v) in request.form.to_dict().items()
+        form_data = _get_form_data_with_file_contents()
+        inputs = {k: v for (k, v) in form_data.items()
                   if not k.startswith("extra_opts.") and k not in ["csrf_token", "infra_name"]}
 
         template = None
@@ -948,15 +956,15 @@ def create_app(oidc_blueprint=None):
             template = set_inputs_to_template(template, inputs)
 
         childs = []
-        if 'extra_opts.childs' in request.form.to_dict():
-            childs = request.form.to_dict()['extra_opts.childs'].split(",")
+        if 'extra_opts.childs' in form_data:
+            childs = form_data['extra_opts.childs'].split(",")
 
         for child in childs:
             with io.open(settings.toscaDir + child) as stream:
                 template = utils.merge_templates(template, yaml.full_load(stream))
 
         cred_data = cred.get_cred(cred_id, get_cred_id())
-        image, _, _, _ = _get_image_and_nets(cred_data, cred_id, request.form.to_dict())
+        image, _, _, _ = _get_image_and_nets(cred_data, cred_id, form_data)
         template = add_image_to_template(template, image)
         template = remove_unnecessary_metadata(template)
 
@@ -1230,9 +1238,9 @@ def create_app(oidc_blueprint=None):
     @authorized_with_valid_token
     def createdep():
 
-        form_data = request.form.to_dict()
+        form_data = _get_form_data_with_file_contents()
 
-        app.logger.debug("Form data: " + json.dumps(request.form.to_dict()))
+        app.logger.debug("Form data: " + json.dumps(form_data))
 
         childs = []
         if 'extra_opts.childs' in form_data:
@@ -1542,7 +1550,7 @@ def create_app(oidc_blueprint=None):
         # Try to get the Cred ID to restrict the auth info sent to the IM
         auth_data = utils.getUserAuthData(access_token, cred, get_cred_id(), infra.get_infra_cred_id(infid))
         reload = None
-        form_data = request.form.to_dict()
+        form_data = _get_form_data_with_file_contents()
 
         try:
             if op == "descr":
