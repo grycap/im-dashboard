@@ -46,7 +46,7 @@ from werkzeug.exceptions import Forbidden
 from flask import Flask, json, render_template, request, redirect, send_file, url_for, flash, session, g, make_response
 from markupsafe import Markup
 from functools import wraps
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 from radl import radl_parse
 from radl.radl import deploy, description, Feature
 from flask_apscheduler import APScheduler
@@ -930,20 +930,62 @@ def create_app(oidc_blueprint=None):
             res_item["resource_error"] = "Error loading resources: %s" % ex
         return res_item
 
-    def _get_form_data_with_file_contents():
+    def _get_form_data_with_file_contents(include_files=False):
         form_data = request.form.to_dict()
+        file_data = {}
         for key, file_storage in request.files.items():
             if file_storage and file_storage.filename:
-                form_data[key] = file_storage.read().decode()
+                content = file_storage.read()
+                file_data[key] = content
+                try:
+                    form_data[key] = content.decode()
+                except UnicodeDecodeError:
+                    form_data[key] = ""
+        if include_files:
+            return form_data, file_data
         return form_data
 
-    def _get_template(cred_id):
-        form_data = _get_form_data_with_file_contents()
-        inputs = {k: v for (k, v) in form_data.items()
-                  if not k.startswith("extra_opts.") and k not in ["csrf_token", "infra_name"]}
+    def _get_ott_url(token, path):
+        secret_url = url_for('secret', path=path, _external=True)
+        parsed_url = urlparse(secret_url)
+        return "ott://%s%s?token=%s" % (parsed_url.netloc, parsed_url.path, quote(token, safe=''))
+
+    def _store_secret_inputs(form_data, template_inputs, access_token, file_data=None):
+        if not template_inputs:
+            return form_data
+        if file_data is None:
+            file_data = {}
+
+        for input_name, input_params in template_inputs.items():
+            secret_value = file_data.get(input_name, form_data.get(input_name))
+            has_secret = input_name in file_data or form_data.get(input_name)
+            if input_params.get("tag_type") == "secret" and has_secret:
+                if form_data.get(input_name, "").startswith("ott://"):
+                    continue
+                token, path = ott.write_data(access_token, secret_value)
+                form_data[input_name] = _get_ott_url(token, path)
+
+        return form_data
+
+    def _mask_secret_inputs(form_data, template_inputs, file_data=None):
+        if not template_inputs:
+            return form_data
+        if file_data is None:
+            file_data = {}
+
+        for input_name, input_params in template_inputs.items():
+            if input_params.get("tag_type") == "secret" and (form_data.get(input_name) or input_name in file_data):
+                form_data[input_name] = "secret"
+
+        return form_data
+
+    def _get_template(cred_id, store_secrets=False):
+        form_data, file_data = _get_form_data_with_file_contents(include_files=True)
 
         template = None
         if request.args.get('template') == 'tosca.yml':
+            inputs = {k: v for (k, v) in form_data.items()
+                      if not k.startswith("extra_opts.") and k not in ["csrf_token", "infra_name"]}
             if inputs.get('tosca'):
                 template = yaml.safe_load(inputs.get('tosca'))
             else:
@@ -953,7 +995,6 @@ def create_app(oidc_blueprint=None):
         else:
             with io.open(settings.toscaDir + request.args.get('template')) as stream:
                 template = yaml.full_load(stream)
-            template = set_inputs_to_template(template, inputs)
 
         childs = []
         if 'extra_opts.childs' in form_data:
@@ -962,6 +1003,18 @@ def create_app(oidc_blueprint=None):
         for child in childs:
             with io.open(settings.toscaDir + child) as stream:
                 template = utils.merge_templates(template, yaml.full_load(stream))
+
+        if store_secrets:
+            access_token = oidc_blueprint.session.token['access_token']
+            template_inputs = template.get('topology_template', {}).get('inputs', {})
+            form_data = _store_secret_inputs(form_data, template_inputs, access_token, file_data)
+        else:
+            template_inputs = template.get('topology_template', {}).get('inputs', {})
+            form_data = _mask_secret_inputs(form_data, template_inputs, file_data)
+
+        inputs = {k: v for (k, v) in form_data.items()
+                  if not k.startswith("extra_opts.") and k not in ["csrf_token", "infra_name"]}
+        template = set_inputs_to_template(template, inputs)
 
         cred_data = cred.get_cred(cred_id, get_cred_id())
         image, _, _, _ = _get_image_and_nets(cred_data, cred_id, form_data)
@@ -982,7 +1035,7 @@ def create_app(oidc_blueprint=None):
     @authorized_with_valid_token
     def gen_template(cred_id=None):
         try:
-            template = _get_template(cred_id)
+            template = _get_template(cred_id, store_secrets=True)
             if template is not None:
                 return Markup(yaml.dump(template, default_flow_style=False, sort_keys=False,
                                         indent=4, allow_unicode=True, width=160))
@@ -1061,6 +1114,9 @@ def create_app(oidc_blueprint=None):
             auth = request.headers.get('Authorization')
             if auth and auth.startswith('Bearer '):
                 token = auth.split(' ')[1]
+            else:
+                token = request.args.get('token')
+            if token:
                 data = ott.get_data(path, token)
                 return make_response(data, 200, {"Content-Type": "text/plain"})
             else:
@@ -1238,9 +1294,7 @@ def create_app(oidc_blueprint=None):
     @authorized_with_valid_token
     def createdep():
 
-        form_data = _get_form_data_with_file_contents()
-
-        app.logger.debug("Form data: " + json.dumps(form_data))
+        form_data, file_data = _get_form_data_with_file_contents(include_files=True)
 
         childs = []
         if 'extra_opts.childs' in form_data:
@@ -1279,6 +1333,11 @@ def create_app(oidc_blueprint=None):
         for child in childs:
             with io.open(settings.toscaDir + child) as stream:
                 template = utils.merge_templates(template, yaml.full_load(stream))
+
+        template_inputs = template.get('topology_template', {}).get('inputs', {})
+        form_data = _store_secret_inputs(form_data, template_inputs, access_token, file_data)
+
+        app.logger.debug("Form data: " + json.dumps(form_data))
 
         if 'metadata' not in template:
             template['metadata'] = {}
@@ -1550,7 +1609,7 @@ def create_app(oidc_blueprint=None):
         # Try to get the Cred ID to restrict the auth info sent to the IM
         auth_data = utils.getUserAuthData(access_token, cred, get_cred_id(), infra.get_infra_cred_id(infid))
         reload = None
-        form_data = _get_form_data_with_file_contents()
+        form_data, file_data = _get_form_data_with_file_contents(include_files=True)
 
         try:
             if op == "descr":
@@ -1611,6 +1670,7 @@ def create_app(oidc_blueprint=None):
                     try:
                         template = yaml.safe_load(form_data['reconfigure_template'])
                         template_inputs = template.get('topology_template', {}).get('inputs', {})
+                        form_data = _store_secret_inputs(form_data, template_inputs, access_token, file_data)
                         for input_name, input_params in template_inputs.items():
                             if input_name in form_data:
                                 input_params['default'] = form_data[input_name]
