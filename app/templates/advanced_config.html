@@ -216,11 +216,13 @@
    function loadSiteInfo() {
        resetPies();
        $('#divLoadingUsage').show();
-       var formData = $("#depSubmit").serialize(); // Serialize all form data
+       var formData = new FormData(document.getElementById("depSubmit"));
        $.ajax({
                method: "POST",
                url: "{{ url_for('home') }}usage/" + $("#selectedCred").val() + "?template={{ selectedTemplate }}",
-               data: formData, // Send serialized form data
+               data: formData,
+               processData: false,
+               contentType: false,
                success : function(text)
                {
                    var enough = true;
@@ -321,11 +323,13 @@
 
    function showTemplate() {
        $('#showTemplateModal').modal('show');
-       var formData = $("#depSubmit").serialize(); // Serialize all form data
+       var formData = new FormData(document.getElementById("depSubmit"));
        $.ajax({
                method: "POST",
                url: "{{ url_for('home') }}gen_template/" + $("#selectedCred").val() + "?template={{ selectedTemplate }}",
-               data: formData, // Send serialized form data
+               data: formData,
+               processData: false,
+               contentType: false,
                success : function(text)
                {
                     var highlighted = '<pre><code class="language-yaml" id="yamlCode">' + text + '</code></pre>';

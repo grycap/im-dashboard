@@ -21,6 +21,11 @@
       <textarea class="form-control" id="{{key}}" name="{{key}}" cols="40" rows="5" aria-describedby="help{{key}}" {% if value.required %}required{%endif%} {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}>{{input_value}}</textarea>
     <!-- end hidden text type -->
 
+    <!-- file type -->
+    {% elif value.tag_type == "file" %}
+      <input type="file" class="form-control" id="{{key}}" name="{{key}}" aria-describedby="help{{key}}" {% if value.required %}required{%endif%} {% if value.accept is defined %}accept="{{value.accept}}"{%endif%} {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}/>
+    <!-- end file type -->
+
     <!-- hidden text type -->
     {% elif value.tag_type == "hidden" %}
       <input type="hidden" class="form-control" id="{{key}}" name="{{key}}" value="{{input_value}}" >

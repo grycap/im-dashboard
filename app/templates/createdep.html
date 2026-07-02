@@ -48,7 +48,7 @@
                {% endif %}
             </div>
 
-            <form id="depSubmit" action="{{ url_for('createdep', template=selectedTemplate) }}" method="post" onsubmit="return onSubmit();">
+            <form id="depSubmit" action="{{ url_for('createdep', template=selectedTemplate) }}" method="post" enctype="multipart/form-data" onsubmit="return onSubmit();">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 {% if child_templates %}
                 <input type="hidden" name="extra_opts.childs" value="{{ ','.join(child_templates.keys()) }}"/>
