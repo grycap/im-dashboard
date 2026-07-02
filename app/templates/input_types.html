@@ -41,6 +41,11 @@
       <input type="password" class="form-control" id="{{key}}" name="{{key}}" placeholder="Enter your password" {% if value.required %}required{%endif%} {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%} >
     <!-- end password type -->
 
+    <!-- secret type -->
+    {% elif value.tag_type == "secret" %}
+      <input type="file" class="form-control" id="{{key}}" name="{{key}}" aria-describedby="help{{key}}" data-secret-input="true" {% if value.required %}required{%endif%} {% if value.accept is defined %}accept="{{value.accept}}"{%endif%} {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}/>
+    <!-- end secret type -->
+
     <!-- userid type -->
     {% elif value.tag_type == "userid" %}
     <input type="text" class="form-control" id="{{key}}" name="{{key}}" value="{{session['userid']}}" aria-describedby="help{{key}}" readonly/>
