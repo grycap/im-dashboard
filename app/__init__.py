@@ -950,6 +950,31 @@ def create_app(oidc_blueprint=None):
         parsed_url = urlparse(secret_url)
         return "ott://%s%s?token=%s" % (parsed_url.netloc, parsed_url.path, quote(token, safe=''))
 
+    def _get_template_inputs(template):
+        template_inputs = template.get('topology_template', {}).get('inputs', {})
+        res = {input_name: {}
+               for input_name in template_inputs}
+
+        for input_name, input_params in template_inputs.items():
+            if isinstance(input_params, dict) and "tag_type" in input_params:
+                res[input_name]["tag_type"] = input_params["tag_type"]
+
+        tabs = template.get('metadata', {}).get('tabs', {})
+
+        for input_elems in tabs.values():
+            if isinstance(input_elems, str):
+                continue
+            for input_elem in input_elems:
+                if isinstance(input_elem, dict):
+                    input_name = list(input_elem.keys())[0]
+                    input_params = list(input_elem.values())[0]
+                    if not isinstance(input_params, dict):
+                        continue
+                    if input_name in res and "tag_type" in input_params:
+                        res[input_name]["tag_type"] = input_params["tag_type"]
+
+        return res
+
     def _store_secret_inputs(form_data, template_inputs, access_token, file_data=None):
         if not template_inputs:
             return form_data
@@ -1006,10 +1031,10 @@ def create_app(oidc_blueprint=None):
 
         if store_secrets:
             access_token = oidc_blueprint.session.token['access_token']
-            template_inputs = template.get('topology_template', {}).get('inputs', {})
+            template_inputs = _get_template_inputs(template)
             form_data = _store_secret_inputs(form_data, template_inputs, access_token, file_data)
         else:
-            template_inputs = template.get('topology_template', {}).get('inputs', {})
+            template_inputs = _get_template_inputs(template)
             form_data = _mask_secret_inputs(form_data, template_inputs, file_data)
 
         inputs = {k: v for (k, v) in form_data.items()
@@ -1669,9 +1694,9 @@ def create_app(oidc_blueprint=None):
                     # If the template has some reconfigure inputs, set them
                     try:
                         template = yaml.safe_load(form_data['reconfigure_template'])
-                        template_inputs = template.get('topology_template', {}).get('inputs', {})
+                        template_inputs = _get_template_inputs(template)
                         form_data = _store_secret_inputs(form_data, template_inputs, access_token, file_data)
-                        for input_name, input_params in template_inputs.items():
+                        for input_name, input_params in template.get('topology_template', {}).get('inputs', {}).items():
                             if input_name in form_data:
                                 input_params['default'] = form_data[input_name]
                         tosca = yaml.safe_dump(template)
