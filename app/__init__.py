@@ -1060,7 +1060,7 @@ def create_app(oidc_blueprint=None):
     @authorized_with_valid_token
     def gen_template(cred_id=None):
         try:
-            template = _get_template(cred_id, store_secrets=True)
+            template = _get_template(cred_id)
             if template is not None:
                 return Markup(yaml.dump(template, default_flow_style=False, sort_keys=False,
                                         indent=4, allow_unicode=True, width=160))
