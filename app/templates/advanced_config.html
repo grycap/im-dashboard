@@ -216,11 +216,13 @@
    function loadSiteInfo() {
        resetPies();
        $('#divLoadingUsage').show();
-       var formData = $("#depSubmit").serialize(); // Serialize all form data
-       $.ajax({
+       getFormDataWithFileContents("depSubmit").then(function(formData) {
+           $.ajax({
                method: "POST",
                url: "{{ url_for('home') }}usage/" + $("#selectedCred").val() + "?template={{ selectedTemplate }}",
-               data: formData, // Send serialized form data
+               data: formData,
+               processData: false,
+               contentType: false,
                success : function(text)
                {
                    var enough = true;
@@ -284,6 +286,7 @@
                    $('#showErrorModal').modal('show');
                    alert(error.responseText);
                }
+           });
        });
    }
 
@@ -319,13 +322,35 @@
        $(".showTemplateBtn").attr("disabled", true);
    }
 
+   function getFormDataWithFileContents(formId) {
+       const form = document.getElementById(formId);
+       const formData = new FormData(form);
+       const fileInputs = Array.from(form.querySelectorAll('input[type="file"][name]'));
+       const readers = fileInputs.map(function(input) {
+           const file = input.files[0];
+           if (!file || input.dataset.secretInput === "true") {
+               return Promise.resolve();
+           }
+
+           return file.text().then(function(content) {
+               formData.set(input.name, content);
+           });
+       });
+
+       return Promise.all(readers).then(function() {
+           return formData;
+       });
+   }
+
    function showTemplate() {
        $('#showTemplateModal').modal('show');
-       var formData = $("#depSubmit").serialize(); // Serialize all form data
-       $.ajax({
+       getFormDataWithFileContents("depSubmit").then(function(formData) {
+           $.ajax({
                method: "POST",
                url: "{{ url_for('home') }}gen_template/" + $("#selectedCred").val() + "?template={{ selectedTemplate }}",
-               data: formData, // Send serialized form data
+               data: formData,
+               processData: false,
+               contentType: false,
                success : function(text)
                {
                     var highlighted = '<pre><code class="language-yaml" id="yamlCode">' + text + '</code></pre>';
@@ -336,6 +361,7 @@
                {
                     $('#templateContent').text(error.responseText);
                }
+           });
        });
    }
 

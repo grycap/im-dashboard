@@ -4,13 +4,17 @@ sys.path.append('..')
 sys.path.append('.')
 
 import unittest
+import io
 import json
 import yaml
 import os
 import defusedxml.ElementTree as etree
 from app import create_app
 from urllib.parse import urlparse
-from mock import patch, MagicMock
+try:
+    from mock import patch, MagicMock
+except ImportError:
+    from unittest.mock import patch, MagicMock
 
 
 def read_file_as_string(file_name):
@@ -973,6 +977,108 @@ class IMDashboardTests(unittest.TestCase):
         del self.client.environ_base['HTTP_AUTHORIZATION']
         self.assertEqual(200, res.status_code)
         self.assertEqual(b'some_data\nmore_data', res.data)
+
+    @patch("hvac.Client")
+    def test_secret_binary(self, hvac):
+        hvac_mock = MagicMock()
+        hvac.return_value = hvac_mock
+        hvac_mock.read.return_value = {"data": {"data": {"encoding": "base64", "data": "AP9iaW5hcnk="}}}
+        res = self.client.get('/secret/secret_id?token=your_token')
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(b'\x00\xffbinary', res.data)
+
+    @patch("app.ToscaTemplate")
+    @patch("app.ott.OneTimeTokenData.write_data")
+    @patch("app.db_cred.DBCredentials.get_cred")
+    @patch("app.utils.avatar")
+    def test_gen_template_secret_input(self, avatar, get_cred, write_data, tosca_template):
+        get_cred.return_value = {"id": "credid", "type": "OSCAR"}
+        write_data.return_value = "ott_token", "secret_path"
+        self.login(avatar)
+
+        template = {
+            "tosca_definitions_version": "tosca_simple_yaml_1_0",
+            "topology_template": {
+                "inputs": {
+                    "password": {
+                        "type": "string",
+                        "tag_type": "secret"
+                    }
+                },
+                "node_templates": {
+                    "simple_node": {
+                        "type": "tosca.nodes.SoftwareComponent",
+                        "properties": {
+                            "secret_value": {"get_input": "password"}
+                        }
+                    }
+                }
+            }
+        }
+        res = self.client.post('/gen_template/credid?template=tosca.yml',
+                               data={"tosca": yaml.safe_dump(template),
+                                     "password": (io.BytesIO(b"\x00\xffsupersecret"), "secret.bin"),
+                                     "extra_opts.selectedImage": "",
+                                     "extra_opts.imageID": "image"})
+
+        self.assertEqual(200, res.status_code)
+        result = yaml.safe_load(res.data)
+        password = result["topology_template"]["inputs"]["password"]["default"]
+        self.assertEqual("ott://localhost/secret/secret_path?token=ott_token", password)
+        self.assertEqual(write_data.call_args_list[0][0][1], b"\x00\xffsupersecret")
+        self.assertEqual({"num_uses": 1, "ttl": "2h"}, write_data.call_args_list[0][1])
+
+    @patch("app.ToscaTemplate")
+    @patch("app.ott.OneTimeTokenData.write_data")
+    @patch("app.db_cred.DBCredentials.get_cred")
+    @patch("app.utils.avatar")
+    def test_gen_template_secret_input_from_metadata_tabs(self, avatar, get_cred, write_data, tosca_template):
+        get_cred.return_value = {"id": "credid", "type": "OSCAR"}
+        write_data.return_value = "ott_token", "secret_path"
+        self.login(avatar)
+
+        template = {
+            "tosca_definitions_version": "tosca_simple_yaml_1_0",
+            "metadata": {
+                "tabs": {
+                    "General": [
+                        {
+                            "password": {
+                                "tag_type": "secret"
+                            }
+                        }
+                    ]
+                }
+            },
+            "topology_template": {
+                "inputs": {
+                    "password": {
+                        "type": "string"
+                    }
+                },
+                "node_templates": {
+                    "simple_node": {
+                        "type": "tosca.nodes.SoftwareComponent",
+                        "properties": {
+                            "secret_value": {"get_input": "password"}
+                        }
+                    }
+                }
+            }
+        }
+        res = self.client.post('/gen_template/credid?template=tosca.yml',
+                               data={"tosca": yaml.safe_dump(template),
+                                     "password": (io.BytesIO(b"\x00\xffsupersecret"), "secret.bin"),
+                                     "extra_opts.selectedImage": "",
+                                     "extra_opts.imageID": "image"})
+
+        self.assertEqual(200, res.status_code)
+        result = yaml.safe_load(res.data)
+        password = result["topology_template"]["inputs"]["password"]["default"]
+        self.assertEqual("ott://localhost/secret/secret_path?token=ott_token", password)
+        self.assertNotIn("tag_type", result["topology_template"]["inputs"]["password"])
+        self.assertEqual(write_data.call_args_list[0][0][1], b"\x00\xffsupersecret")
+        self.assertEqual({"num_uses": 1, "ttl": "2h"}, write_data.call_args_list[0][1])
 
     @patch("app.utils.getUserAuthData")
     @patch('requests.get')

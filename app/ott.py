@@ -19,6 +19,7 @@
 # specific language governing permissions and limitations
 # under the License.
 """Class to manage data using One Time Tokens (OTT)."""
+import base64
 import hvac
 from uuid import uuid4
 
@@ -30,19 +31,23 @@ class OneTimeTokenData():
     def __init__(self, vault_url, role="", ttl="3h", num_uses=5):
         self.vault_url = vault_url
         self.role = role
-        self.ttl = ttl
-        self.num_uses = num_uses
+        self.default_ttl = ttl
+        self.default_num_uses = num_uses
 
-    def _create(self, access_token):
+    def _create(self, access_token, ttl=None, num_uses=None):
         """
         Create a locker and return the locker token
         from fedcloudclient. Thanks to @tdviet
         """
         client = hvac.Client(url=self.vault_url)
         client.auth.jwt.jwt_login(role=self.role, jwt=access_token)
-        client.auth.token.renew_self(increment=self.ttl)
+        if ttl is None:
+            ttl = self.default_ttl
+        if num_uses is None:
+            num_uses = self.default_num_uses
+        client.auth.token.renew_self(increment=ttl)
         locker_token = client.auth.token.create(
-            policies=["default"], ttl=self.ttl, num_uses=self.num_uses, renewable=True, explicit_max_ttl=self.ttl,
+            policies=["default"], ttl=ttl, num_uses=num_uses, renewable=True, explicit_max_ttl=ttl,
         )
         return locker_token["auth"]["client_token"]
 
@@ -54,7 +59,10 @@ class OneTimeTokenData():
         client = hvac.Client(url=self.vault_url, token=locker_token)
         if command == "read_secret":
             resp = client.read(self.VAULT_LOCKER_MOUNT_POINT + path)
-            return resp.get("data").get("data").replace("\\n", "\n")
+            data = resp.get("data").get("data")
+            if isinstance(data, dict) and data.get("encoding") == "base64":
+                return base64.b64decode(data.get("data", ""))
+            return data.replace("\\n", "\n")
         elif command == "put":
             resp = client.write(self.VAULT_LOCKER_MOUNT_POINT + path, data=data)
             return None
@@ -63,11 +71,13 @@ class OneTimeTokenData():
         else:
             raise Exception(f"Invalid command {command}")
 
-    def write_data(self, access_token, data, path=None):
-        token = self._create(access_token)
+    def write_data(self, access_token, data, path=None, ttl=None, num_uses=None):
+        token = self._create(access_token, ttl=ttl, num_uses=num_uses)
         if path is None:
             # Generate a random path
             path = str(uuid4())
+        if isinstance(data, bytes):
+            data = {"encoding": "base64", "data": base64.b64encode(data).decode()}
         self.locker_client(token, "put", path, data)
         return token, path
 
