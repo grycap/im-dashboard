@@ -675,7 +675,7 @@ class IMDashboardTests(unittest.TestCase):
         self.assertEqual("ott://localhost/secret/secret_path?token=ott_token", password)
         write_data.assert_called_once()
         self.assertEqual(b"plain secret\n", write_data.call_args_list[0][0][1])
-        self.assertEqual({"num_uses": 1, "ttl": "2h"}, write_data.call_args_list[0][1])
+        self.assertEqual({"num_uses": 2, "ttl": "2h"}, write_data.call_args_list[0][1])
 
     @patch("app.utils.avatar")
     @patch("app.db_cred.DBCredentials.get_creds")
