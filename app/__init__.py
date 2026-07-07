@@ -987,7 +987,7 @@ def create_app(oidc_blueprint=None):
             if input_params.get("tag_type") == "secret" and has_secret:
                 if form_data.get(input_name, "").startswith("ott://"):
                     continue
-                token, path = ott.write_data(access_token, secret_value, num_uses=1, ttl="2h")
+                token, path = ott.write_data(access_token, secret_value, num_uses=2, ttl="2h")
                 form_data[input_name] = _get_ott_url(token, path)
 
         return form_data
