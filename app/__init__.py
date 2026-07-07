@@ -1359,7 +1359,7 @@ def create_app(oidc_blueprint=None):
             with io.open(settings.toscaDir + child) as stream:
                 template = utils.merge_templates(template, yaml.full_load(stream))
 
-        template_inputs = template.get('topology_template', {}).get('inputs', {})
+        template_inputs = _get_template_inputs(template)
         form_data = _store_secret_inputs(form_data, template_inputs, access_token, file_data)
 
         app.logger.debug("Form data: " + json.dumps(form_data))
