@@ -31,19 +31,23 @@ class OneTimeTokenData():
     def __init__(self, vault_url, role="", ttl="3h", num_uses=5):
         self.vault_url = vault_url
         self.role = role
-        self.ttl = ttl
-        self.num_uses = num_uses
+        self.default_ttl = ttl
+        self.default_num_uses = num_uses
 
-    def _create(self, access_token):
+    def _create(self, access_token, ttl=None, num_uses=None):
         """
         Create a locker and return the locker token
         from fedcloudclient. Thanks to @tdviet
         """
         client = hvac.Client(url=self.vault_url)
         client.auth.jwt.jwt_login(role=self.role, jwt=access_token)
-        client.auth.token.renew_self(increment=self.ttl)
+        if ttl is None:
+            ttl = self.default_ttl
+        if num_uses is None:
+            num_uses = self.default_num_uses
+        client.auth.token.renew_self(increment=ttl)
         locker_token = client.auth.token.create(
-            policies=["default"], ttl=self.ttl, num_uses=self.num_uses, renewable=True, explicit_max_ttl=self.ttl,
+            policies=["default"], ttl=ttl, num_uses=num_uses, renewable=True, explicit_max_ttl=ttl,
         )
         return locker_token["auth"]["client_token"]
 
@@ -67,8 +71,8 @@ class OneTimeTokenData():
         else:
             raise Exception(f"Invalid command {command}")
 
-    def write_data(self, access_token, data, path=None):
-        token = self._create(access_token)
+    def write_data(self, access_token, data, path=None, ttl=None, num_uses=None):
+        token = self._create(access_token, ttl=ttl, num_uses=num_uses)
         if path is None:
             # Generate a random path
             path = str(uuid4())

@@ -1026,6 +1026,7 @@ class IMDashboardTests(unittest.TestCase):
         password = result["topology_template"]["inputs"]["password"]["default"]
         self.assertEqual("ott://localhost/secret/secret_path?token=ott_token", password)
         self.assertEqual(write_data.call_args_list[0][0][1], b"\x00\xffsupersecret")
+        self.assertEqual({"num_uses": 1, "ttl": "2h"}, write_data.call_args_list[0][1])
 
     @patch("app.ToscaTemplate")
     @patch("app.ott.OneTimeTokenData.write_data")
@@ -1077,6 +1078,7 @@ class IMDashboardTests(unittest.TestCase):
         self.assertEqual("ott://localhost/secret/secret_path?token=ott_token", password)
         self.assertNotIn("tag_type", result["topology_template"]["inputs"]["password"])
         self.assertEqual(write_data.call_args_list[0][0][1], b"\x00\xffsupersecret")
+        self.assertEqual({"num_uses": 1, "ttl": "2h"}, write_data.call_args_list[0][1])
 
     @patch("app.utils.getUserAuthData")
     @patch('requests.get')
