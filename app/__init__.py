@@ -987,7 +987,7 @@ def create_app(oidc_blueprint=None):
             if input_params.get("tag_type") == "secret" and has_secret:
                 if form_data.get(input_name, "").startswith("ott://"):
                     continue
-                token, path = ott.write_data(access_token, secret_value, num_uses=1, ttl="2h")
+                token, path = ott.write_data(access_token, secret_value, num_uses=2, ttl="2h")
                 form_data[input_name] = _get_ott_url(token, path)
 
         return form_data
@@ -1060,7 +1060,7 @@ def create_app(oidc_blueprint=None):
     @authorized_with_valid_token
     def gen_template(cred_id=None):
         try:
-            template = _get_template(cred_id, store_secrets=True)
+            template = _get_template(cred_id)
             if template is not None:
                 return Markup(yaml.dump(template, default_flow_style=False, sort_keys=False,
                                         indent=4, allow_unicode=True, width=160))
@@ -1359,7 +1359,7 @@ def create_app(oidc_blueprint=None):
             with io.open(settings.toscaDir + child) as stream:
                 template = utils.merge_templates(template, yaml.full_load(stream))
 
-        template_inputs = template.get('topology_template', {}).get('inputs', {})
+        template_inputs = _get_template_inputs(template)
         form_data = _store_secret_inputs(form_data, template_inputs, access_token, file_data)
 
         app.logger.debug("Form data: " + json.dumps(form_data))

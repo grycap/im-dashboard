@@ -609,6 +609,74 @@ class IMDashboardTests(unittest.TestCase):
         self.assertIn('/infrastructures', res.headers['location'])
         self.assertEqual(flash.call_count, 0)
 
+    @patch("app.ToscaTemplate")
+    @patch("app.ott.OneTimeTokenData.write_data")
+    @patch("app.utils.getUserAuthData")
+    @patch('requests.post')
+    @patch("app.utils.avatar")
+    @patch("app.utils.get_site_info")
+    @patch("app.db_cred.DBCredentials.get_cred")
+    @patch("app.ssh_key.SSHKey.get_ssh_keys")
+    @patch("app.flash")
+    def test_submit_secret_input_from_metadata_tabs(self, flash, get_ssh_keys, get_cred, get_site_info, avatar,
+                                                    post, user_data, write_data, tosca_template):
+        response = MagicMock()
+        response.ok = True
+        response.text = "http://server.com/im/infrastructures/infid"
+        post.return_value = response
+        user_data.return_value = "type = InfrastructureManager; token = access_token"
+        get_cred.return_value = {"id": "credid", "type": "fedcloud"}
+        get_site_info.return_value = {}, "", "vo"
+        get_ssh_keys.return_value = []
+        write_data.return_value = "ott_token", "secret_path"
+        self.login(avatar)
+
+        template = {
+            "tosca_definitions_version": "tosca_simple_yaml_1_0",
+            "metadata": {
+                "tabs": {
+                    "General": [
+                        {
+                            "password": {
+                                "tag_type": "secret"
+                            }
+                        }
+                    ]
+                }
+            },
+            "topology_template": {
+                "inputs": {
+                    "password": {
+                        "type": "string"
+                    }
+                },
+                "node_templates": {
+                    "simple_node": {
+                        "type": "tosca.nodes.SoftwareComponent",
+                        "properties": {
+                            "secret_value": {"get_input": "password"}
+                        }
+                    }
+                }
+            }
+        }
+        params = {'extra_opts.selectedImage': '',
+                  'extra_opts.selectedSiteImage': 'IMAGE_NAME',
+                  'extra_opts.selectedCred': 'credid',
+                  'infra_name': 'some_infra',
+                  'tosca': yaml.safe_dump(template),
+                  'password': (io.BytesIO(b"plain secret\n"), "secret.txt")}
+
+        res = self.client.post('/submit?template=tosca.yml', data=params)
+
+        self.assertEqual(302, res.status_code)
+        payload = yaml.safe_load(post.call_args_list[0][1]["data"])
+        password = payload["topology_template"]["inputs"]["password"]["default"]
+        self.assertEqual("ott://localhost/secret/secret_path?token=ott_token", password)
+        write_data.assert_called_once()
+        self.assertEqual(b"plain secret\n", write_data.call_args_list[0][0][1])
+        self.assertEqual({"num_uses": 2, "ttl": "2h"}, write_data.call_args_list[0][1])
+
     @patch("app.utils.avatar")
     @patch("app.db_cred.DBCredentials.get_creds")
     @patch("app.cloud_info.get_sites")
@@ -1024,9 +1092,8 @@ class IMDashboardTests(unittest.TestCase):
         self.assertEqual(200, res.status_code)
         result = yaml.safe_load(res.data)
         password = result["topology_template"]["inputs"]["password"]["default"]
-        self.assertEqual("ott://localhost/secret/secret_path?token=ott_token", password)
-        self.assertEqual(write_data.call_args_list[0][0][1], b"\x00\xffsupersecret")
-        self.assertEqual({"num_uses": 1, "ttl": "2h"}, write_data.call_args_list[0][1])
+        self.assertEqual("secret", password)
+        write_data.assert_not_called()
 
     @patch("app.ToscaTemplate")
     @patch("app.ott.OneTimeTokenData.write_data")
@@ -1075,10 +1142,9 @@ class IMDashboardTests(unittest.TestCase):
         self.assertEqual(200, res.status_code)
         result = yaml.safe_load(res.data)
         password = result["topology_template"]["inputs"]["password"]["default"]
-        self.assertEqual("ott://localhost/secret/secret_path?token=ott_token", password)
+        self.assertEqual("secret", password)
         self.assertNotIn("tag_type", result["topology_template"]["inputs"]["password"])
-        self.assertEqual(write_data.call_args_list[0][0][1], b"\x00\xffsupersecret")
-        self.assertEqual({"num_uses": 1, "ttl": "2h"}, write_data.call_args_list[0][1])
+        write_data.assert_not_called()
 
     @patch("app.utils.getUserAuthData")
     @patch('requests.get')
