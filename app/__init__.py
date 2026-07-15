@@ -1283,7 +1283,7 @@ def create_app(oidc_blueprint=None):
         priv_network_id = None
         pub_network_id = None
         if cred_data['type'] in ['fedcloud', 'OpenStack', 'OpenNebula', 'Linode',
-                                 'Orange', 'GCE', 'CH', 'EUNode', 'Chameleon']:
+                                 'Orange', 'GCE', 'CH', 'EUNode', 'Chameleon', 'UpCloud']:
             if cred_data['type'] == 'fedcloud':
                 site, _, vo = utils.get_site_info(cred_id, cred, get_cred_id())
                 if "networks" in site and vo in site["networks"]:

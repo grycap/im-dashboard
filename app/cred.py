@@ -50,7 +50,7 @@ class Credentials:
             cred_id = new_cred
             new_cred = self.get_cred(cred_id, userid)
 
-        no_host_types = ["EC2", "GCE", "Azure", "linode", "Orange"]
+        no_host_types = ["EC2", "GCE", "Azure", "linode", "Orange", "UpCloud"]
         for cred in self.get_creds(userid, 1):
             if cred["type"] == new_cred["type"] and (not cred_id or cred_id != cred['id']):
                 isequal = True
