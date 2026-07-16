@@ -360,6 +360,20 @@
             </select>
           </div>
         </div>
+{% elif cred_type == "UpCloud" %}
+        <div class="row form-group">
+          <div class="col">
+              <input placeholder="ID" name="username" class="col-sm-12 form-control my-1" type="text" id="username" value="{{ creds['username'] if creds else '' }}"/>
+          </div>
+          <div class="col">
+              <input placeholder="Secret" name="password" class="col-sm-12 form-control my-1" type="password" id="password"/>
+          </div>
+        </div>
+        <div class="row form-group">
+          <div class="col">
+              <input placeholder="API Token" name="token" class="col-sm-12 form-control my-1" type="text" id="token" value="{{ creds['token'] if creds else '' }}"/>
+          </div>
+        </div>
 {% else %}
 
 
