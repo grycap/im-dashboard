@@ -373,6 +373,9 @@
           <div class="col">
               <input placeholder="API Token" name="token" class="col-sm-12 form-control my-1" type="text" id="token" value="{{ creds['token'] if creds else '' }}"/>
           </div>
+          <div class="col">
+            <input placeholder="Location" name="location" class="col-sm-12 form-control my-1" type="text" id="location" value="{{ creds['location'] if creds else '' }}" required/>              
+          </div>
         </div>
 {% else %}
 
