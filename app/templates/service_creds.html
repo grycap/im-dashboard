@@ -95,6 +95,9 @@
                         {% if 'region' in cred%}
                         <strong>Region: </strong> {{cred["region"]}}
                         {% endif %}
+                        {% if 'location' in cred%}
+                        <strong>Location: </strong> {{cred["location"]}}
+                        {% endif %}
                       </td>
                       <td>
                         <button {{ 'disabled' if cred['type']=='fedcloud' else '' }} type=button id="updateBtn" data-id="{{cred['id']}}" data-type="{{cred['host']}}" class="btn btn-small btn-info" data-bs-toggle="modal" data-bs-target="#newModal"><i class='far fa-edit m-1'></i></button>
