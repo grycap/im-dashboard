@@ -511,7 +511,7 @@ class IMDashboardTests(unittest.TestCase):
         self.assertIn(b'<option name="selectedSite" value=static_site_url>static_site_name</option>', res.data)
         self.assertIn(b'<option name="selectedSite" value=URL2>SITE2 (WARNING: CRITICAL state!)</option>', res.data)
 
-    def _egi_site_response(self, quota_limit):
+    def _egi_site_response(self, quota_limit, existing=False):
         site = {"url": "https://egi.example:5000", "state": "", "id": "site-id"}
         candidate = {"id": "egi-auto-SITE-vo", "type": "fedcloud",
                      "host": site["url"], "vo": "vo", "enabled": True}
@@ -534,7 +534,8 @@ class IMDashboardTests(unittest.TestCase):
                 patch("app.utils.get_project_ids"), \
                 patch("app.utils.getUserAuthData", return_value="auth"), \
                 patch("app.utils.get_site_info", return_value=({"name": "SITE"}, "", "vo")), \
-                patch("app.db_cred.DBCredentials.get_creds", return_value=[]), \
+                patch("app.db_cred.DBCredentials.get_creds",
+                      return_value=[candidate] if existing else []), \
                 patch("app.db_cred.DBCredentials.get_cred", return_value=candidate), \
                 patch("app.db_cred.DBCredentials.write_creds") as write_creds, \
                 patch("app.db_cred.DBCredentials.delete_cred") as delete_cred, \
@@ -554,7 +555,17 @@ class IMDashboardTests(unittest.TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual("egi-auto-SITE-vo", response.json["id"])
         self.assertEqual("SITE", response.json["site"])
+        self.assertFalse(response.json["existing"])
         write_creds.assert_called_once()
+        delete_cred.assert_not_called()
+
+    def test_select_egi_site_reports_reused_credential(self):
+        response, write_creds, delete_cred = self._egi_site_response(
+            quota_limit=10, existing=True)
+
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(response.json["existing"])
+        write_creds.assert_not_called()
         delete_cred.assert_not_called()
 
     def test_select_egi_site_removes_candidate_without_resources(self):

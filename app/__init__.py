@@ -1009,7 +1009,8 @@ def create_app(oidc_blueprint=None):
                 if "quota_error" in quotas:
                     raise Exception(quotas["quota_error"])
                 if _quotas_fit(quotas, _required_resources(resources)):
-                    return {"id": cred_id, "type": "fedcloud", "site": site_name}
+                    return {"id": cred_id, "type": "fedcloud", "site": site_name,
+                            "existing": current is not None}
                 errors.append("%s: insufficient quota" % site_name)
             except Exception as ex:
                 app.logger.warning("Unable to use EGI site %s for VO %s: %s", site_name, vo, ex)
