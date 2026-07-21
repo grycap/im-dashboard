@@ -980,8 +980,8 @@ def create_app(oidc_blueprint=None):
                 continue
 
             current = next((item for item in existing
-                            if item.get("type") == "fedcloud" and item.get("host") == site["url"]
-                            and item.get("vo") == vo and item.get("enabled", True)), None)
+                            if item.get("type") == "fedcloud" and item.get("host") == site["url"] and
+                            item.get("vo") == vo and item.get("enabled", True)), None)
             inserted = current is None
             registered = False
             try:
@@ -1009,7 +1009,8 @@ def create_app(oidc_blueprint=None):
                 if "quota_error" in quotas:
                     raise Exception(quotas["quota_error"])
                 if _quotas_fit(quotas, _required_resources(resources)):
-                    return {"id": cred_id, "type": "fedcloud", "site": site_name}
+                    return {"id": cred_id, "type": "fedcloud", "site": site_name,
+                            "existing": current is not None}
                 errors.append("%s: insufficient quota" % site_name)
             except Exception as ex:
                 app.logger.warning("Unable to use EGI site %s for VO %s: %s", site_name, vo, ex)

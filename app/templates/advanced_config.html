@@ -172,6 +172,11 @@
         $("#selectedSiteImage").prop('disabled', false);
    }
 
+   function chooseEGIAutoSite() {
+       $('#selectedCred').val('__egi_auto__').trigger('change');
+       $('#egiVO').focus();
+   }
+
    function selectEGISite() {
        var vo = $('#egiVO').val();
        if (!vo) {
@@ -189,10 +194,22 @@
                processData: false,
                contentType: false,
                success: function(data) {
-                   var option = new Option(data.site + " (" + vo + ")", data.id, true, true);
+                   var credentialStatus = data.existing ? "existing credential" : "new credential";
+                   var option = new Option("EGI Cloud · " + data.site + " · " + vo + " · " + credentialStatus,
+                                           data.id, true, true);
                    option.setAttribute('data-type', data.type);
                    $('#selectedCred option[data-type="egi-auto"]').before(option);
                    $('#selectedCred').val(data.id);
+                   var result = $('#egiSelectionResult');
+                   result.empty();
+                   result.append($('<i>', {class: 'fas fa-check-circle me-2'}));
+                   result.append($('<strong>').text(data.site));
+                   result.append($('<span>').text(' · VO: ' + vo));
+                   if (data.existing) {
+                       result.append($('<div>', {class: 'small mt-1'}).text(
+                           'Existing cloud credential reused.'));
+                   }
+                   result.show();
                    changedCred();
                },
                error: function(error) {
@@ -423,6 +440,11 @@
 
            <div>
                <label>Select Cloud Provider:</label>
+                   <div class="mb-2 mt-2">
+                    <button type="button" id="egiAutoChoiceBtn" class="btn btn-outline-primary" onclick="chooseEGIAutoSite()">
+                        <i class="fas fa-magnifying-glass me-1"></i> Find EGI Cloud site <i class="fas fa-cloud me-2"></i>
+                    </button>
+                   </div>
                <div id="noCloud" style="display: none;">
                 <label>No Cloud Provider defined. Add it in the Cloud Credentials page: <a class="btn btn-success text-white" href="{{ url_for('manage_creds') }}">Add</a></label>
                </div>
@@ -431,6 +453,7 @@
                     <option name="selectedCred" value=""> - Select Cloud site - </option>
                 </select>
                </div>
+               <div id="egiSelectionResult" class="alert alert-success mt-2 mb-0" role="status" style="display: none;"></div>
                <div id="egiAutoSite" class="mt-3" style="display: none;">
                    <label>Select one of your EGI Cloud VOs:</label>
                    <select class="js-example-basic-single js-states form-control" id="egiVO">
