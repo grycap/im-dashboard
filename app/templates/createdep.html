@@ -143,14 +143,17 @@ $(document).ready(function () {
     $.getJSON("{{url_for('manage_creds')}}?json=1&template={{selectedTemplate}}", function( data ) {
         if (data.length == 0) {
             $('#selectedCred').empty();
-            $('#noCloud').show();
-            $('#cloudSelect').hide();
+            $('#selectedCred').append("<option value=''> - Select Cloud site - </option>");
+            $('#selectedCred').append("<option value='__egi_auto__' data-type='egi-auto'>☁ EGI Cloud - find an available site...</option>");
+            $('#noCloud').hide();
+            $('#cloudSelect').show();
             $('#tabAdvanced').tab('show');
         } else {
             $('#noCloud').hide();
             $('#cloudSelect').show();
             $('#selectedCred').empty();
             $('#selectedCred').append("<option value=''> - Select Cloud site - </option>");
+            $('#selectedCred').append("<option value='__egi_auto__' data-type='egi-auto'>☁ EGI Cloud - find an available site...</option>");
             for (var i = 0; i < data.length; i++) {
                 var option = "<option name='selectedCred' value='" + data[i]["id"] + "'";
                 if ("tenant_id" in data[i]) {
