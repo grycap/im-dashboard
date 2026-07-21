@@ -543,6 +543,8 @@ class IMDashboardTests(unittest.TestCase):
                 patch("app.im.InfrastructureManager.get_cloud_quotas", return_value=quotas_response), \
                 patch("app.ToscaTemplate"):
             self.login(avatar)
+            with self.client.session_transaction() as user_session:
+                user_session["vos"] = ["vo"]
             response = self.client.post(
                 "/egi/select-site/vo?template=tosca.yml",
                 data={"tosca": yaml.safe_dump(template),
