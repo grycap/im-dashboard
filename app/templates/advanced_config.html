@@ -99,6 +99,13 @@
         var select = document.getElementById('selectedCred');
         var cred_type = select.options[select.selectedIndex].getAttribute("data-type");
         $('#outOfResources').hide();
+        if (cred_type == 'egi-auto') {
+            $('#egiAutoSite').show();
+            $('#cloudImages, #fedcloudImages, #siteImages, #fedcloudUsage').hide();
+            disableSubmit();
+            return;
+        }
+        $('#egiAutoSite').hide();
         if (cred_type == null) {
             // no cloud provider selected, hide everything
             $('#cloudImages').hide();
@@ -163,6 +170,41 @@
         }
         $("#selectedImage").prop('disabled', false);
         $("#selectedSiteImage").prop('disabled', false);
+   }
+
+   function selectEGISite() {
+       var vo = $('#egiVO').val();
+       if (!vo) {
+           $('#errorMsg').text('Please select a VO.');
+           $('#showErrorModal').modal('show');
+           return;
+       }
+       var button = $('#selectEGISiteBtn');
+       button.prop('disabled', true).html("<span class='spinner-border spinner-border-sm'></span> Looking for a site with resources...");
+       getFormDataWithFileContents("depSubmit").then(function(formData) {
+           $.ajax({
+               method: "POST",
+               url: "{{ url_for('home') }}egi/select-site/" + encodeURIComponent(vo) + "?template={{ selectedTemplate }}",
+               data: formData,
+               processData: false,
+               contentType: false,
+               success: function(data) {
+                   var option = new Option(data.site + " (" + vo + ")", data.id, true, true);
+                   option.setAttribute('data-type', data.type);
+                   $('#selectedCred option[data-type="egi-auto"]').after(option);
+                   $('#selectedCred').val(data.id);
+                   changedCred();
+               },
+               error: function(error) {
+                   var message = error.responseJSON && error.responseJSON.error ? error.responseJSON.error : error.responseText;
+                   $('#errorMsg').text(message);
+                   $('#showErrorModal').modal('show');
+               },
+               complete: function() {
+                   button.prop('disabled', false).html("<i class='fas fa-magnifying-glass'></i> Find available site");
+               }
+           });
+       });
    }
 
    function loadImages() {
@@ -388,6 +430,17 @@
                 <select class="js-example-basic-single js-states form-control" id="selectedCred" name="extra_opts.selectedCred" onchange="changedCred();">
                     <option name="selectedCred" value=""> - Select Cloud site - </option>
                 </select>
+               </div>
+               <div id="egiAutoSite" class="mt-3" style="display: none;">
+                   <label>Select one of your EGI Cloud VOs:</label>
+                   <select class="js-example-basic-single js-states form-control" id="egiVO">
+                       <option value=""> - Select one VO - </option>
+                       {% for vo in vos %}<option value="{{ vo }}">{{ vo }}</option>{% endfor %}
+                   </select>
+                   <button type="button" id="selectEGISiteBtn" class="btn btn-info mt-2" onclick="selectEGISite()">
+                       <i class="fas fa-magnifying-glass"></i> Find available site
+                   </button>
+                   <small class="form-text text-muted d-block">The dashboard will test the sites supporting this VO and add the first one with enough resources.</small>
                </div>
            </div>
 
