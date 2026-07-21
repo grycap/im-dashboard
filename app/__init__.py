@@ -29,6 +29,7 @@ import copy
 import requests
 import re
 import concurrent.futures
+import hashlib
 from requests.exceptions import Timeout
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_dance.consumer import OAuth2ConsumerBlueprint
@@ -929,6 +930,98 @@ def create_app(oidc_blueprint=None):
         except Exception as ex:
             res_item["resource_error"] = "Error loading resources: %s" % ex
         return res_item
+
+    def _required_resources(resources):
+        """Return the quota amounts required by an IM resource estimate."""
+        totals = {
+            "cores": 0, "ram": 0, "instances": 0, "floating_ips": 0,
+            "volumes": 0, "volume_storage": 0, "security_groups": 2
+        }
+        for vm in resources.get("compute", []):
+            totals["instances"] += 1
+            totals["cores"] += vm.get("cpuCores", 0)
+            totals["ram"] += vm.get("memoryInMegabytes", 0)
+            totals["floating_ips"] += vm.get("publicIP", 0)
+        totals["ram"] /= 1024.0
+        for disk in resources.get("storage", []):
+            totals["volumes"] += 1
+            totals["volume_storage"] += disk.get("sizeInGigabytes", 0)
+        return totals
+
+    def _quotas_fit(quotas, required):
+        for resource, amount in required.items():
+            quota = quotas.get(resource)
+            if quota is None:
+                continue
+            limit = quota.get("limit", -1)
+            if limit > 0 and limit - quota.get("used", 0) < amount:
+                return False
+        return True
+
+    @app.route('/egi/select-site/<vo>', methods=['POST'])
+    @authorized_with_valid_token
+    def select_egi_site(vo):
+        """Find and persist the first EGI site with room for this deployment."""
+        if vo not in utils.getVOs(session):
+            return {"error": "The selected VO is not available for this user."}, 403
+
+        sites = utils.getStaticSites(vo)
+        for site_name, site in cloud_info.get_sites(vo).items():
+            if site_name not in sites:
+                sites[site_name] = site
+
+        userid = get_cred_id()
+        existing = cred.get_creds(userid)
+        access_token = oidc_blueprint.session.token['access_token']
+        errors = []
+
+        for site_name, site in sites.items():
+            if not site.get("url") or site.get("state") == "CRITICAL":
+                continue
+
+            current = next((item for item in existing
+                            if item.get("type") == "fedcloud" and item.get("host") == site["url"]
+                            and item.get("vo") == vo and item.get("enabled", True)), None)
+            inserted = current is None
+            registered = False
+            try:
+                if current:
+                    cred_id = current["id"]
+                else:
+                    slug = re.sub(r'[^A-Za-z0-9_.-]+', '-', "%s-%s" % (site_name, vo)).strip('-')
+                    cred_id = "egi-auto-%s" % slug[:210]
+                    if any(item.get("id") == cred_id for item in existing):
+                        digest = hashlib.sha256((site["url"] + vo).encode()).hexdigest()[:10]
+                        cred_id = "%s-%s" % (cred_id[:230], digest)
+                    candidate = {"id": cred_id, "type": "fedcloud", "host": site["url"], "vo": vo}
+                    utils.get_project_ids([candidate])
+                    cred.write_creds(cred_id, userid, candidate, True)
+                    registered = True
+
+                auth_data = utils.getUserAuthData(access_token, cred, userid, cred_id,
+                                                  add_extra_auth=False)
+                template = _get_template(cred_id)
+                payload = yaml.dump(template, default_flow_style=False, sort_keys=False)
+                resources = _get_resources(payload, auth_data)
+                if "resource_error" in resources:
+                    raise Exception(resources["resource_error"])
+                quotas = _get_quotas(cred_id, auth_data)
+                if "quota_error" in quotas:
+                    raise Exception(quotas["quota_error"])
+                if _quotas_fit(quotas, _required_resources(resources)):
+                    return {"id": cred_id, "type": "fedcloud", "site": site_name}
+                errors.append("%s: insufficient quota" % site_name)
+            except Exception as ex:
+                app.logger.warning("Unable to use EGI site %s for VO %s: %s", site_name, vo, ex)
+                errors.append("%s: %s" % (site_name, ex))
+
+            if inserted and registered:
+                cred.delete_cred(cred_id, userid)
+
+        message = "No EGI Cloud site with enough resources was found for VO %s." % vo
+        if errors:
+            message += " Tried: " + "; ".join(errors)
+        return {"error": message}, 409
 
     def _get_form_data_with_file_contents(include_files=False):
         form_data = request.form.to_dict()
