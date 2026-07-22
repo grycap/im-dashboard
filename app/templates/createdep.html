@@ -145,7 +145,7 @@ $(document).ready(function () {
         $('#cloudSelect').show();
         $('#selectedCred').empty();
         $('#selectedCred').append("<option value=''> - Select Cloud site - </option>");
-        $('#selectedCred').append("<option value='__egi_auto__' data-type='egi-auto'>☁ EGI Cloud - find an available site...</option>");
+        $('#selectedCred').append("<option value='__egi_auto__' data-type='egi-auto'>🔍 EGI Cloud - find an available site...</option>");
         for (var i = 0; i < data.length; i++) {
             var option = "<option name='selectedCred' value='" + data[i]["id"] + "'";
             if ("tenant_id" in data[i]) {
