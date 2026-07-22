@@ -511,6 +511,66 @@ class IMDashboardTests(unittest.TestCase):
         self.assertIn(b'<option name="selectedSite" value=static_site_url>static_site_name</option>', res.data)
         self.assertIn(b'<option name="selectedSite" value=URL2>SITE2 (WARNING: CRITICAL state!)</option>', res.data)
 
+    def _egi_site_response(self, quota_limit):
+        site = {"url": "https://egi.example:5000", "state": "", "id": "site-id"}
+        candidate = {"id": "egi-auto-SITE-vo", "type": "fedcloud",
+                     "host": site["url"], "vo": "vo", "enabled": True}
+        resources_response = MagicMock(ok=True)
+        resources_response.json.return_value = {
+            "SITE": {"compute": [{"cpuCores": 2, "memoryInMegabytes": 2048}], "storage": []}
+        }
+        quotas_response = MagicMock(ok=True)
+        quotas_response.json.return_value = {
+            "quotas": {"cores": {"used": 1, "limit": quota_limit}}
+        }
+        template = {
+            "tosca_definitions_version": "tosca_simple_yaml_1_0",
+            "topology_template": {"node_templates": {}}
+        }
+
+        with patch("app.utils.avatar") as avatar, \
+                patch("app.cloud_info.get_sites", return_value={"SITE": site}), \
+                patch("app.utils.getStaticSites", return_value={}), \
+                patch("app.utils.get_project_ids"), \
+                patch("app.utils.getUserAuthData", return_value="auth"), \
+                patch("app.utils.get_site_info", return_value=({"name": "SITE"}, "", "vo")), \
+                patch("app.db_cred.DBCredentials.get_creds", return_value=[]), \
+                patch("app.db_cred.DBCredentials.get_cred", return_value=candidate), \
+                patch("app.db_cred.DBCredentials.write_creds") as write_creds, \
+                patch("app.db_cred.DBCredentials.delete_cred") as delete_cred, \
+                patch("app.im.InfrastructureManager.get_resources", return_value=resources_response), \
+                patch("app.im.InfrastructureManager.get_cloud_quotas", return_value=quotas_response), \
+                patch("app.ToscaTemplate"):
+            self.login(avatar)
+            with self.client.session_transaction() as user_session:
+                user_session["vos"] = ["vo"]
+            response = self.client.post(
+                "/egi/select-site/vo?template=tosca.yml",
+                data={"tosca": yaml.safe_dump(template),
+                      "extra_opts.selectedSiteImage": "ost://egi.example/image"})
+            return response, write_creds, delete_cred
+
+    def test_select_egi_site_with_available_resources(self):
+        response, write_creds, delete_cred = self._egi_site_response(quota_limit=10)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("egi-auto-SITE-vo", response.json["id"])
+        self.assertEqual("SITE", response.json["site"])
+        write_creds.assert_called_once()
+        delete_cred.assert_not_called()
+
+    def test_select_egi_site_removes_candidate_without_resources(self):
+        response, write_creds, delete_cred = self._egi_site_response(quota_limit=2)
+
+        self.assertEqual(409, response.status_code)
+        self.assertIn("No EGI Cloud site with enough resources", response.json["error"])
+        write_creds.assert_any_call(
+            "egi-auto-SITE-vo", "userid",
+            {"id": "egi-auto-SITE-vo", "type": "fedcloud",
+             "host": "https://egi.example:5000", "vo": "vo"}, True)
+        delete_cred.assert_any_call("egi-auto-SITE-vo", "userid")
+        self.assertEqual(write_creds.call_count, delete_cred.call_count)
+
     @patch("app.utils.avatar")
     @patch("app.utils.getUserAuthData")
     @patch("app.utils.get_site_info")
