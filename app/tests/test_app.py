@@ -1243,7 +1243,7 @@ class IMDashboardTests(unittest.TestCase):
         node["capabilities"]["os"]["properties"]["image"] = 'egi://test_site/IMAGE_NAME?vo'
 
         if 'metadata' in expected_res:
-            unnecessary_fields = ['icon', 'order', 'tabs', 'childs', 'parents']
+            unnecessary_fields = ['icon', 'order', 'childs', 'parents']
             for field in unnecessary_fields:
                 if field in expected_res['metadata']:
                     del expected_res['metadata'][field]
