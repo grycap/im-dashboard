@@ -564,8 +564,12 @@ class IMDashboardTests(unittest.TestCase):
 
         self.assertEqual(409, response.status_code)
         self.assertIn("No EGI Cloud site with enough resources", response.json["error"])
-        write_creds.assert_called_once()
-        delete_cred.assert_called_once_with("egi-auto-SITE-vo", "userid")
+        write_creds.assert_any_call(
+            "egi-auto-SITE-vo", "userid",
+            {"id": "egi-auto-SITE-vo", "type": "fedcloud",
+             "host": "https://egi.example:5000", "vo": "vo"}, True)
+        delete_cred.assert_any_call("egi-auto-SITE-vo", "userid")
+        self.assertEqual(write_creds.call_count, delete_cred.call_count)
 
     @patch("app.utils.avatar")
     @patch("app.utils.getUserAuthData")
