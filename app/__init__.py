@@ -1309,7 +1309,7 @@ def create_app(oidc_blueprint=None):
 
     def remove_unnecessary_metadata(template):
         if 'metadata' in template:
-            unnecessary_fields = ['icon', 'order', 'tabs', 'childs', 'parents']
+            unnecessary_fields = ['icon', 'order', 'childs', 'parents']
             for field in unnecessary_fields:
                 if field in template['metadata']:
                     del template['metadata'][field]
