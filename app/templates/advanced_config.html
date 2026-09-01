@@ -333,7 +333,7 @@
    }
 
    function selectedSiteImageChanged() {
-        // disable the other select of AppDB images
+        // disable the other select of Artefact Registry images
         var selected = $("#selectedSiteImage option:selected" ).text();
         if (selected == " - Select one image - ") {
             $("#selectedImage").prop('disabled', false);
@@ -451,9 +451,9 @@
            </div>
 
            <div id="fedcloudImages" style="display: none;">
-              <label>Select only one of this options AppDB or Site image:</label>
+              <label>Select only one of this options Artefact Registry or Site image:</label>
               <br/>
-              <label>Select AppDB image:</label>
+              <label>Select Artefact Registry image:</label>
               <select class="js-example-basic-single js-states form-control" id="selectedImage" name="extra_opts.selectedImage" onchange="selectedImageChanged()">
                   <option name="selectedImage" value="">Select provider</option>
               </select>
