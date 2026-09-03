@@ -2100,7 +2100,12 @@ def create_app(oidc_blueprint=None):
         apps = [""]
         site_name = None
         try:
-            for inf_stat in sorted(im.get_stats(auth_data, init_date, end_date),
+            # To calculate how many infrastructures are alive at init_date we
+            # also need those created before the requested interval.
+            stats_init_date = None if active else init_date
+            if active:
+                init_datetime = datetime.datetime.fromisoformat("%s 00:00:00" % init_date)
+            for inf_stat in sorted(im.get_stats(auth_data, stats_init_date, end_date),
                                    key=lambda stat: stat['creation_date']):
                 if inf_stat['cloud_host']:
                     # only load this data if a EGI Cloud site appears
@@ -2139,37 +2144,45 @@ def create_app(oidc_blueprint=None):
                     tosca_names.append(inf_stat['tosca_name'])
 
                 if active:
-                    curr_date = datetime.datetime.strptime(inf_stat['creation_date'], "%Y-%m-%d %H:%M:%S")
-                    inf_list = list(inf_actives)
-                    for inf in inf_list:
-                        del_time = datetime.datetime.strptime(inf[5], "%Y-%m-%d %H:%M:%S")
-                        if inf[5] and del_time <= curr_date:
-                            infs.append(-1)
-                            vms.append(inf[0] * -1)
-                            mems.append(inf[1] * -1.0)
-                            cpus.append(inf[2] * -1)
-                            clouds.append(inf[3])
-                            apps.append(inf[4])
-                            labels.append(inf[5])
-                            inf_actives.remove(inf)
+                    curr_date = datetime.datetime.fromisoformat(inf_stat['creation_date'])
+                    last_date = inf_stat.get('last_date')
+                    if (curr_date < init_datetime and inf_stat.get('deleted') and last_date and
+                            datetime.datetime.fromisoformat(last_date) <= init_datetime):
+                        continue
+                    deleted_infs = [inf for inf in inf_actives if inf[6] and inf[5] and
+                                    datetime.datetime.fromisoformat(inf[5]) <= curr_date]
+                    for inf in sorted(deleted_infs,
+                                      key=lambda elem: datetime.datetime.fromisoformat(elem[5])):
+                        infs.append(-1)
+                        vms.append(inf[0] * -1)
+                        mems.append(inf[1] * -1.0)
+                        cpus.append(inf[2] * -1)
+                        clouds.append(inf[3])
+                        apps.append(inf[4])
+                        labels.append(inf[5])
+                        inf_actives.remove(inf)
+
+                    creation_date = inf_stat['creation_date']
+                    if curr_date < init_datetime:
+                        creation_date = "%s 00:00:00" % init_date
 
                     inf_actives.append((inf_stat['vm_count'], (inf_stat['memory_size'] / 1024),
                                         inf_stat['cpu_count'], site_name, inf_stat['tosca_name'],
-                                        inf_stat['last_date'], inf_stat['deleted']))
+                                        inf_stat.get('last_date'), inf_stat.get('deleted', False)))
 
                 infs.append(1)
                 vms.append(inf_stat['vm_count'])
                 mems.append((inf_stat['memory_size'] / 1024))
                 cpus.append(inf_stat['cpu_count'])
-                labels.append(inf_stat['creation_date'])
+                labels.append(creation_date if active else inf_stat['creation_date'])
                 clouds.append(site_name)
                 apps.append(inf_stat['tosca_name'])
 
             if active:
-                curr_date = datetime.datetime.strptime("%s 23:59:59" % end_date, "%Y-%m-%d %H:%M:%S")
-                for inf in inf_actives:
-                    del_time = datetime.datetime.strptime(inf[5], "%Y-%m-%d %H:%M:%S")
-                    if inf[5] and del_time <= curr_date:
+                curr_date = datetime.datetime.fromisoformat("%s 23:59:59" % end_date)
+                deleted_infs = [inf for inf in inf_actives if inf[6] and inf[5]]
+                for inf in sorted(deleted_infs, key=lambda elem: datetime.datetime.fromisoformat(elem[5])):
+                    if datetime.datetime.fromisoformat(inf[5]) <= curr_date:
                         infs.append(-1)
                         vms.append(inf[0] * -1)
                         mems.append(inf[1] * -1.0)
