@@ -2056,16 +2056,18 @@ def create_app(oidc_blueprint=None):
                     if (curr_date < init_datetime and inf_stat.get('deleted') and last_date and
                             datetime.datetime.fromisoformat(last_date) <= init_datetime):
                         continue
-                    for inf in list(inf_actives):
-                        if inf[6] and inf[5] and datetime.datetime.fromisoformat(inf[5]) <= curr_date:
-                            infs.append(-1)
-                            vms.append(inf[0] * -1)
-                            mems.append(inf[1] * -1.0)
-                            cpus.append(inf[2] * -1)
-                            clouds.append(inf[3])
-                            apps.append(inf[4])
-                            labels.append(inf[5])
-                            inf_actives.remove(inf)
+                    deleted_infs = [inf for inf in inf_actives if inf[6] and inf[5] and
+                                    datetime.datetime.fromisoformat(inf[5]) <= curr_date]
+                    for inf in sorted(deleted_infs,
+                                      key=lambda elem: datetime.datetime.fromisoformat(elem[5])):
+                        infs.append(-1)
+                        vms.append(inf[0] * -1)
+                        mems.append(inf[1] * -1.0)
+                        cpus.append(inf[2] * -1)
+                        clouds.append(inf[3])
+                        apps.append(inf[4])
+                        labels.append(inf[5])
+                        inf_actives.remove(inf)
 
                     creation_date = inf_stat['creation_date']
                     if curr_date < init_datetime:

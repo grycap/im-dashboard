@@ -845,7 +845,11 @@ class IMDashboardTests(unittest.TestCase):
             {'creation_date': '2022-03-15 10:00:00', 'tosca_name': 'app3',
              'vm_count': 3, 'cpu_count': 6, 'memory_size': 3072,
              'cloud_type': 'Docker', 'cloud_host': '',
-             'last_date': '2022-03-18 12:00:00', 'deleted': True}
+             'last_date': '2022-03-18 12:00:00', 'deleted': True},
+            {'creation_date': '2022-03-25 10:00:00', 'tosca_name': 'app4',
+             'vm_count': 1, 'cpu_count': 1, 'memory_size': 1024,
+             'cloud_type': 'Docker', 'cloud_host': '',
+             'last_date': None, 'deleted': False}
         ]}
         get.return_value = response
 
@@ -854,9 +858,11 @@ class IMDashboardTests(unittest.TestCase):
 
         self.assertEqual(200, res.status_code)
         self.assertNotIn(b'Error Getting Stats:', res.data)
-        self.assertIn(b'const infs = [0, 1, 1, 1, 1, -1, -1, 0];', res.data)
-        self.assertIn(b'const vms = [0, 2, 2, 1, 3, -3, -2, 0];', res.data)
+        self.assertIn(b'const infs = [0, 1, 1, 1, 1, -1, -1, 1, 0];', res.data)
+        self.assertIn(b'const vms = [0, 2, 2, 1, 3, -3, -2, 1, 0];', res.data)
         self.assertGreaterEqual(res.data.count(b'labels.push("2022-03-01 00:00:00");'), 2)
+        self.assertLess(res.data.find(b'labels.push("2022-03-18 12:00:00");'),
+                        res.data.find(b'labels.push("2022-03-20 12:00:00");'))
         self.assertIn('end_date=2022-03-31', get.call_args[0][0])
         self.assertNotIn('init_date=', get.call_args[0][0])
 
