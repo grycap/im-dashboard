@@ -816,6 +816,51 @@ class IMDashboardTests(unittest.TestCase):
         self.assertIn(b'const vms = [0, 2, 0];', res.data)
 
     @patch("app.utils.avatar")
+    @patch("app.utils.getIMUserAuthData")
+    @patch('requests.get')
+    @patch("app.utils.getCachedSiteList")
+    def test_active_stats(self, get_sites, get, user_data, avatar):
+        user_data.return_value = "type = InfrastructureManager; token = access_token"
+        self.login(avatar)
+        get_sites.return_value = {}
+
+        response = MagicMock()
+        response.json.return_value = {"stats": [
+            {'creation_date': '2022-02-01 10:00:00', 'tosca_name': 'old-active',
+             'vm_count': 2, 'cpu_count': 2, 'memory_size': 2048,
+             'cloud_type': 'OpenStack', 'cloud_host': '',
+             'last_date': None, 'deleted': False},
+            {'creation_date': '2022-02-01 11:00:00', 'tosca_name': 'old-deleted',
+             'vm_count': 10, 'cpu_count': 10, 'memory_size': 10240,
+             'cloud_type': 'OpenStack', 'cloud_host': '',
+             'last_date': '2022-02-20 12:00:00', 'deleted': True},
+            {'creation_date': '2022-03-01 10:00:00', 'tosca_name': 'app1',
+             'vm_count': 2, 'cpu_count': 4, 'memory_size': 2048,
+             'cloud_type': 'OpenStack', 'cloud_host': '',
+             'last_date': '2022-03-20 12:00:00', 'deleted': True},
+            {'creation_date': '2022-03-10 10:00:00', 'tosca_name': 'app2',
+             'vm_count': 1, 'cpu_count': 2, 'memory_size': 1024,
+             'cloud_type': '', 'cloud_host': '',
+             'last_date': None, 'deleted': False},
+            {'creation_date': '2022-03-15 10:00:00', 'tosca_name': 'app3',
+             'vm_count': 3, 'cpu_count': 6, 'memory_size': 3072,
+             'cloud_type': 'Docker', 'cloud_host': '',
+             'last_date': '2022-03-18 12:00:00', 'deleted': True}
+        ]}
+        get.return_value = response
+
+        res = self.client.get('/stats?active=1&init_date=2022-03-01&end_date=2022-03-31'
+                              '&cloud_host=Docker&app_name=app3')
+
+        self.assertEqual(200, res.status_code)
+        self.assertNotIn(b'Error Getting Stats:', res.data)
+        self.assertIn(b'const infs = [0, 1, 1, 1, 1, -1, -1, 0];', res.data)
+        self.assertIn(b'const vms = [0, 2, 2, 1, 3, -3, -2, 0];', res.data)
+        self.assertGreaterEqual(res.data.count(b'labels.push("2022-03-01 00:00:00");'), 2)
+        self.assertIn('end_date=2022-03-31', get.call_args[0][0])
+        self.assertNotIn('init_date=', get.call_args[0][0])
+
+    @patch("app.utils.avatar")
     @patch("app.ssh_key.SSHKey.get_ssh_keys")
     def test_get_ssh_keys(self, get_ssh_keys, avatar):
         self.login(avatar)
