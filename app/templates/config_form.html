@@ -6,15 +6,15 @@
   {% for tab in tabs %}
     {% set tab_id = tab.replace(" ", "_") %}
     {% if loop.first %}
-      <li class="nav-item"><a class="nav-link active" data-id="#{{tab_id}}" data-bs-toggle="tab" href=#{{tab_id}}>{{tab}}</a></li>
+      <li class="nav-item"><a class="nav-link active px-2" data-id="#{{tab_id}}" data-bs-toggle="tab" href=#{{tab_id}}>{{tab}}</a></li>
     {% else %}
-      <li class="nav-item"><a class="nav-link" data-id="#{{tab_id}}" data-bs-toggle="tab" href=#{{tab_id}}>{{tab}}</a></li>
+      <li class="nav-item"><a class="nav-link px-2" data-id="#{{tab_id}}" data-bs-toggle="tab" href=#{{tab_id}}>{{tab}}</a></li>
     {% endif %}
   {% endfor %}
 {% else %}
-  <li class="nav-item"><a class="nav-link active" data-id="#InputValues" data-bs-toggle="tab" href=#InputValues>Input Values</a></li>
+  <li class="nav-item"><a class="nav-link active px-2" data-id="#InputValues" data-bs-toggle="tab" href=#InputValues>Input Values</a></li>
 {% endif %}
-<li class="nav-item"><a class="nav-link" id="tabAdvanced" data-id="#Advanced" data-bs-toggle="tab" href=#Advanced>Cloud Provider</a></li> <!-- always create advanced tab -->
+<li class="nav-item"><a class="nav-link px-2" id="tabAdvanced" data-id="#Advanced" data-bs-toggle="tab" href=#Advanced>Cloud Provider</a></li> <!-- always create advanced tab -->
 </ul>
   <!-- end tab creation section -->
 
