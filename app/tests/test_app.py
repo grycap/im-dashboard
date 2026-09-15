@@ -1270,6 +1270,20 @@ class IMDashboardTests(unittest.TestCase):
         self.assertIn(b'<input type="text" class="form-control" id="param1"', res.data)
         self.assertIn(b'<input type="hidden" name="reconfigure_template"', res.data)
 
+        port_inputs = {
+            "Tab1": {
+                "ports": {
+                    "type": "list",
+                    "entry_schema": {"type": "PortSpec"},
+                    "default": [{"protocol": "tcp", "source": 22}]
+                }
+            }
+        }
+        with patch("app.utils.getReconfigureInputs", return_value=port_inputs):
+            res = self.client.get('/reconfigure/infid')
+        self.assertEqual(200, res.status_code)
+        self.assertIn(b'addItem_ports(null, value=\'22\')', res.data)
+
     @patch("app.utils.getUserAuthData")
     @patch("app.utils.avatar")
     def test_auth_file(self, avatar, user_data):
