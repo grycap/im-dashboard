@@ -1789,9 +1789,7 @@ def create_app(oidc_blueprint=None):
                         template = yaml.safe_load(form_data['reconfigure_template'])
                         template_inputs = _get_template_inputs(template)
                         form_data = _store_secret_inputs(form_data, template_inputs, access_token, file_data)
-                        for input_name, input_params in template.get('topology_template', {}).get('inputs', {}).items():
-                            if input_name in form_data:
-                                input_params['default'] = form_data[input_name]
+                        template = set_inputs_to_template(template, form_data)
                         tosca = yaml.safe_dump(template)
                     except Exception as ex:
                         flash("Error passing reconfigure values (changes ignored): %s." % ex, 'warn')
