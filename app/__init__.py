@@ -1905,7 +1905,8 @@ def create_app(oidc_blueprint=None):
             infra_data = {}
         infra_name = infra_data.get("name", "")
 
-        return render_template('reconfigure.html', infid=infid, inputs=inputs, infra_name=infra_name, template=template)
+        return render_template('reconfigure.html', infid=infid, inputs=inputs,
+                               infra_name=infra_name, template=template, utils=utils)
 
     @app.route('/logout')
     def logout(next_url=None):
