@@ -414,6 +414,28 @@ class IMDashboardTests(unittest.TestCase):
         self.assertIn('/infrastructures', res.headers['location'])
         self.assertEqual(flash.call_args_list[0][0], ("Reconfiguration process successfuly started.", 'success'))
 
+        template = {
+            "topology_template": {
+                "inputs": {
+                    "packages": {
+                        "type": "list",
+                        "entry_schema": {"type": "string"},
+                        "default": ["old-package"]
+                    }
+                }
+            }
+        }
+        res = self.client.post('/manage_inf/infid/reconfigure', data={
+            "reconfigure_template": yaml.safe_dump(template),
+            "packages": "",
+            "packages_list_value_1": "new-package",
+            "packages_list_value_2": "another-package"
+        })
+        self.assertEqual(302, res.status_code)
+        payload = yaml.safe_load(put.call_args_list[-1][1]["data"])
+        self.assertEqual(["new-package", "another-package"],
+                         payload["topology_template"]["inputs"]["packages"]["default"])
+
     @patch("app.utils.getUserAuthData")
     @patch('requests.get')
     @patch("app.utils.avatar")
