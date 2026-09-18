@@ -1,0 +1,14 @@
+{
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true,
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./app/tests",
+        "-p",
+        "test*.py"
+    ],
+    "files.associations": {
+        "*.html": "jinja-html"
+       }
+}
