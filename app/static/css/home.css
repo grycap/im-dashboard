@@ -1,0 +1,157 @@
+/* Shared home layout. EGI supplies its palette and inherited typography. */
+.im-home {
+    --home-heading: var(--egi-blue, var(--bs-emphasis-color, #212529));
+    --home-link: var(--egi-blue, var(--bs-link-color, #0d6efd));
+    --home-muted: var(--egi-muted, #606973);
+    --home-surface: var(--egi-surface, #f6f8fa);
+    color: var(--egi-ink, var(--bs-body-color, #212529));
+    line-height: 1.7;
+}
+.im-home .container { max-width: 1160px; padding-inline: 1.5rem; }
+.im-home .home-hero { padding-block: clamp(3rem, 6vw, 5.5rem); }
+.im-home .home-hero-layout,
+.im-home .home-about-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 3rem;
+    align-items: center;
+}
+.im-home .home-eyebrow {
+    margin-bottom: .875rem;
+    color: var(--home-link);
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+.im-home h1 {
+    margin-bottom: 1.5rem;
+    color: var(--home-heading);
+    font-size: clamp(2.125rem, 3.5vw, 3.25rem);
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -.035em;
+    overflow-wrap: break-word;
+}
+.im-home .home-intro {
+    max-width: 560px;
+    margin-bottom: 1.75rem;
+    color: var(--home-muted);
+    font-size: 1.125rem;
+}
+.im-home .home-actions,
+.im-home .home-resource-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.5rem;
+}
+.im-home .home-actions .btn { padding: .75rem 1.25rem; font-size: 1rem; font-weight: 500; }
+.im-home .home-docs-link { font-size: .9375rem; font-weight: 500; text-underline-offset: .2em; }
+.im-home .home-provider-login img { max-width: 100%; height: auto; max-height: 55px; }
+.im-home .home-visual { padding: 1.5rem; }
+.im-home .home-visual img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 260px;
+    margin-inline: auto;
+}
+.im-home h2 {
+    margin-bottom: .875rem;
+    color: var(--home-heading);
+    font-size: clamp(1.625rem, 2.4vw, 2.125rem);
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -.02em;
+}
+.im-home .home-topologies {
+    padding-block: clamp(2.5rem, 5vw, 4rem);
+    background: var(--home-surface);
+}
+.im-home .home-section-heading { margin: 0 auto 2rem; text-align: center; }
+.im-home .home-section-heading p,
+.im-home .home-contact { color: var(--home-muted); }
+.im-home .home-topology-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+}
+.im-home .home-topology {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.75rem 1rem 1.25rem;
+    border: 1px solid #e3e7eb;
+    border-radius: .75rem;
+    background: #fff;
+    color: var(--home-muted);
+    text-align: center;
+    text-decoration: none;
+    transition: border-color .18s ease, box-shadow .18s ease;
+}
+.im-home .home-topology:hover {
+    border-color: var(--home-link);
+    box-shadow: 0 4px 16px rgb(0 0 0 / 6%);
+}
+.im-home .home-topology img {
+    width: 100%;
+    max-width: 180px;
+    height: 90px;
+    margin-bottom: 1.25rem;
+    object-fit: contain;
+}
+.im-home .home-topology-description { margin-bottom: .75rem; font-size: .9375rem; }
+.im-home .home-topology-link { margin-top: auto; color: var(--home-link); font-size: .75rem; }
+.im-home .home-topology-link i { margin-left: .25rem; font-size: .65rem; }
+.im-home .home-contact { margin: 1.75rem 0 0; text-align: center; font-size: .9375rem; }
+.im-home .home-about { padding-block: clamp(3rem, 5vw, 4.5rem); }
+.im-home .home-about-layout { gap: 4rem; align-items: start; }
+.im-home .home-about p:not(.home-eyebrow) { color: var(--home-muted); }
+.im-home .home-resource-links { margin-top: 1.5rem; font-size: .9375rem; }
+.im-home .home-providers { padding: 1.75rem; border: 1px solid #e3e7eb; border-radius: .75rem; }
+.im-home .home-providers h3 { color: var(--home-heading); font-size: 1.125rem; font-weight: 700; }
+.im-home .home-providers p { font-size: .9375rem; }
+.im-home .home-providers ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .75rem 1rem;
+    margin: 1.25rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: .875rem;
+}
+.im-home a:focus-visible { outline: 3px solid var(--home-link); outline-offset: 4px; }
+
+/* Only the home footer flows naturally; dashboard footers keep their layout. */
+body:has(.im-home) { margin-bottom: 0; }
+.im-home + .footer { position: static; height: auto; padding: 1.5rem .75rem; opacity: 1; }
+.im-home + .footer .row { align-items: center; row-gap: 1rem; }
+.im-home + .footer p {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem 1rem;
+    margin: 0;
+}
+.im-home + .footer img { max-width: 110px; object-fit: contain; margin: 0; }
+.im-home + .footer a { color: #fff; }
+
+@media (max-width: 991.98px) {
+    .im-home .home-hero-layout,
+    .im-home .home-about-layout { grid-template-columns: 1fr; gap: 2rem; }
+    .im-home .home-visual { max-width: 320px; margin-inline: auto; padding: .5rem; }
+}
+@media (max-width: 575.98px) {
+    .im-home .container { padding-inline: 1.25rem; }
+    .im-home .home-topology-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+    .im-home .home-topology { padding: 1.25rem .75rem 1rem; }
+    .im-home .home-topology img { height: 65px; }
+    .im-home .home-topology-description { font-size: .8125rem; }
+    .im-home + .footer .col-6 { width: 100%; text-align: center; }
+    .im-home + .footer .text-end { text-align: center !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .im-home .home-topology { transition: none; }
+}
