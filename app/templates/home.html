@@ -25,14 +25,15 @@ hr.style-seven:before { /* Not really supposed to work, but does */
 
 </style>
 
-<div class = "jumbotron jumbotron-fluid">
+<div class="jumbotron jumbotron-fluid egi-home">
   <br/>
   <div class="bg-light-grey">
     {% include 'flashed_messages.html' %}
     <div class="row mx-3">
      <div class="d-flex flex-wrap col-lg-7 align-items-center">
-     <p class="mt-4 h1 text-primary">
+     <h1 class="mt-4 h1 text-primary">
         Infrastructure Manager Dashboard.
+     </h1>
      <p class="h2 text-primary">
         Use a cloud orchestrator to deploy and configure complex virtual infrastructures
      </p>
@@ -112,7 +113,7 @@ hr.style-seven:before { /* Not really supposed to work, but does */
 
        <!-- About Section -->
 
-      <section id="about" class="py-4 my-5 bg-light-grey">
+      <section id="about-im" class="py-4 my-5 bg-light-grey">
         <div class="container">
             <h2 class="section-heading text-center mb-4 font-weight-bold text-primary">About</h2>
             <div class="row">
@@ -140,6 +141,6 @@ hr.style-seven:before { /* Not really supposed to work, but does */
 
         </div>
     </section>
+</div>
 
 {% endblock %}
-
