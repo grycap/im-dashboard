@@ -107,14 +107,14 @@
                       <option {% if cloud_host == host %}selected{%endif%} value="{{ host }}">{{ host }}</option>
                     {% endfor %}
                     </select>
-                  <select class="form-control col-md-4" id="app_name" name="app_name" onchange="javascript:filterByCloudOrApp()">
+                  <select class="form-control col-md-4 rounded-end" id="app_name" name="app_name" onchange="javascript:filterByCloudOrApp()">
                     <option value="">- App Name -</option>
                     {% for app in tosca_names %}
                       <option {% if app_name == app %}selected{%endif%} value="{{ app }}">{{ app }}</option>
                     {% endfor %}
                     </select>
                   <input type="checkbox" class="btn-check" id="active" autocomplete="off" name="active" value="1" {% if active %}checked{%endif%}>
-                  <label class="btn btn-outline-secondary" for="active">Alive</label><br>
+                  <label class="btn btn-outline-secondary rounded-start ms-2" for="active">Active</label><br>
                   <input type="date" value="{{init_date}}" max="{{today}}" id="init_date" class="form-control col-md-4" name="init_date">
                   <input type="date" value="{{end_date}}" max="{{today}}" id="end_date" class="form-control col-md-4" name="end_date">
                   <button type="submit" class="btn btn-primary submitBtn"><span class='fas fa-sync mr-2'></span>Update</button>
