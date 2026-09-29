@@ -271,7 +271,12 @@ def create_app(oidc_blueprint=None):
             next_url = session.pop("next")
             return redirect(url_for('home') + next_url[1:])
         else:
-            return render_template('portfolio.html', templates=templates, parent=None)
+            visible_templates = {
+                name: template for name, template in templates.items()
+                if utils.valid_template_vos(session["vos"], template["metadata"])
+            }
+            return render_template('portfolio.html', templates=templates,
+                                   grouped_templates=utils.group_tosca_templates(visible_templates), parent=None)
 
     @app.route('/vminfo')
     @authorized_with_valid_token
@@ -830,7 +835,9 @@ def create_app(oidc_blueprint=None):
                 for child in toscaInfo[selected_tosca]["metadata"]["childs"]:
                     if child in toscaInfo and utils.valid_template_vos(session['vos'], toscaInfo[child]["metadata"]):
                         child_templates[child] = toscaInfo[child]
-                return render_template('portfolio.html', templates=child_templates, parent=selected_tosca)
+                return render_template('portfolio.html', templates=child_templates,
+                                       grouped_templates=utils.group_tosca_templates(child_templates),
+                                       parent=selected_tosca)
         else:
             app.logger.debug("Template: " + json.dumps(toscaInfo[selected_tosca]))
 

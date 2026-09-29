@@ -450,6 +450,28 @@ def extractToscaInfo(toscaDir, toscaTemplates, tags_to_hide):
     return toscaInfoOrder
 
 
+def group_tosca_templates(templates, default_group="General"):
+    """Group TOSCA templates using their metadata ``groups`` field."""
+    grouped_templates = OrderedDict()
+
+    for filename, template in templates.items():
+        groups = template.get("metadata", {}).get("groups")
+        if isinstance(groups, str):
+            groups = [groups]
+        elif not isinstance(groups, (list, tuple, set)):
+            groups = []
+
+        groups = [str(group).strip() for group in groups if group is not None and str(group).strip()]
+        if not groups:
+            groups = [default_group]
+
+        # Avoid rendering the same template twice if a group is repeated.
+        for group in dict.fromkeys(groups):
+            grouped_templates.setdefault(group, OrderedDict())[filename] = template
+
+    return grouped_templates
+
+
 def generate_random_name():
     left = [
         "admiring",

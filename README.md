@@ -97,6 +97,7 @@ In particular, the following tags are supported:
 | metadata.icon . |  Used for showing the card image. If no image URL is provided, the dashboard will load this [icon](https://cdn4.iconfinder.com/data/icons/mosaicon-04/512/websettings-512.png). |
 | metadata.display_name | Used for the card title. If not provided, the template name will be used   |               |
 | metadata.tag | Used for the card ribbon (displayed on the right bottom corner)   |               |
+| metadata.groups | Group or list of groups used to organize portfolio cards in tabs. Templates without a group are shown under `General`. Tabs are hidden when there is only one group. | |
 
 Example of template metadata:
 
@@ -111,6 +112,8 @@ description: Deploy a Mesos Cluster (with Marathon and Chronos frameworks) on to
 metadata:
   display_name: Deploy a Mesos cluster
   icon: https://indigo-paas.cloud.ba.infn.it/public/images/apache-mesos-icon.png
+  groups:
+    - Container orchestration
 
 topology_template:
 
