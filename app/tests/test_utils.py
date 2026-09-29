@@ -76,6 +76,22 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(new_template, {"topology_template": {"node_templates": {"n1": {"type": "Compute"},
                                                                                  "n2": {"type": "Compute"}}}})
 
+    def test_group_tosca_templates(self):
+        templates = {
+            "general.yml": {"metadata": {}},
+            "compute.yml": {"metadata": {"groups": ["Compute", "Featured", "Compute"]}},
+            "storage.yml": {"metadata": {"groups": "Storage"}},
+            "empty.yml": {"metadata": {"groups": []}},
+            "null.yml": {"metadata": {"groups": [None, ""]}},
+        }
+
+        grouped = utils.group_tosca_templates(templates)
+
+        self.assertEqual(list(grouped), ["General", "Compute", "Featured", "Storage"])
+        self.assertEqual(list(grouped["General"]), ["general.yml", "empty.yml", "null.yml"])
+        self.assertEqual(list(grouped["Compute"]), ["compute.yml"])
+        self.assertEqual(list(grouped["Featured"]), ["compute.yml"])
+
 
 if __name__ == '__main__':
     unittest.main()
