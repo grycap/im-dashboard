@@ -640,6 +640,8 @@ class IMDashboardTests(unittest.TestCase):
         self.assertEqual(302, res.status_code)
         self.assertIn('/infrastructures', res.headers['location'])
         self.assertEqual(flash.call_count, 0)
+        payload = yaml.safe_load(post.call_args_list[0][1]["data"])
+        self.assertEqual([], payload["metadata"]["childs"])
 
     @patch('app.utils.get_site_info')
     @patch("app.utils.getUserAuthData")
