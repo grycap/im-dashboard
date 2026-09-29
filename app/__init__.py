@@ -1410,7 +1410,7 @@ def create_app(oidc_blueprint=None):
 
     def remove_unnecessary_metadata(template):
         if 'metadata' in template:
-            unnecessary_fields = ['icon', 'order', 'parents']
+            unnecessary_fields = ['icon', 'order', 'childs', 'parents']
             for field in unnecessary_fields:
                 if field in template['metadata']:
                     del template['metadata'][field]
@@ -1468,7 +1468,6 @@ def create_app(oidc_blueprint=None):
         if 'metadata' not in template:
             template['metadata'] = {}
         template['metadata']['filename'] = request.args.get('template')
-        template['metadata']['childs'] = childs
 
         if priv_network_id and pub_network_id:
             template = add_network_id_to_template(template, priv_network_id, pub_network_id)
@@ -1490,6 +1489,9 @@ def create_app(oidc_blueprint=None):
         template = set_inputs_to_template(template, inputs)
 
         template = remove_unnecessary_metadata(template)
+        # Keep the selected children for delete-and-recreate. The parent's
+        # original metadata lists every available child, not the chosen ones.
+        template['metadata']['childs'] = childs
 
         payload = yaml.dump(template, default_flow_style=False, sort_keys=False)
 

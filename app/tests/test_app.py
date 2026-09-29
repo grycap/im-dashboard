@@ -630,6 +630,7 @@ class IMDashboardTests(unittest.TestCase):
         params = {'extra_opts.selectedImage': '',
                   'extra_opts.selectedSiteImage': 'IMAGE_NAME',
                   'extra_opts.selectedCred': 'credid',
+                  'extra_opts.childs': 'users.yml',
                   'num_cpus': '4',
                   'ports': '22,80,443',
                   'storage_size': '0 GB',
@@ -640,6 +641,8 @@ class IMDashboardTests(unittest.TestCase):
         self.assertEqual(302, res.status_code)
         self.assertIn('/infrastructures', res.headers['location'])
         self.assertEqual(flash.call_count, 0)
+        payload = yaml.safe_load(post.call_args_list[0][1]["data"])
+        self.assertEqual(["users.yml"], payload["metadata"]["childs"])
 
     @patch('app.utils.get_site_info')
     @patch("app.utils.getUserAuthData")
