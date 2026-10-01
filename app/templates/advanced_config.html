@@ -142,6 +142,8 @@
             $('#siteImages').hide();
             $('#fedcloudUsage').show();
             loadSiteInfo();
+            // Container providers do not require a VM image selection.
+            activateSubmit();
         } else {
             if (cred_type == 'EC2') {
                 document.getElementById('imageID').setAttribute("placeholder", "Region / Image ID (e.g.: us-east-1/ami-f9f8ba9c)");
