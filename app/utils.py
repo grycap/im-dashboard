@@ -1047,6 +1047,14 @@ def merge_templates(template, new_template):
             template["metadata"]["tabs"] = {}
         template["metadata"]["tabs"].update(tabs)
 
+    output_metadata = new_template.get("metadata", {}).get("outputs", {})
+    if output_metadata:
+        if "metadata" not in template:
+            template["metadata"] = {}
+        if "outputs" not in template["metadata"]:
+            template["metadata"]["outputs"] = {}
+        template["metadata"]["outputs"].update(output_metadata)
+
     return template
 
 
