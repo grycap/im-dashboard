@@ -784,10 +784,8 @@ def create_app(oidc_blueprint=None):
                     conditions = rule.get('enabled_by', []) if isinstance(rule, dict) else []
                     if isinstance(conditions, str):
                         conditions = [conditions]
-                    if conditions and not all(
-                            utils.input_is_set(condition[1:] if condition.startswith('!') else condition,
-                                               template_inputs)
-                            != condition.startswith('!') for condition in conditions):
+                    if conditions and not all(utils.output_condition_matches(condition, template_inputs)
+                                              for condition in conditions):
                         del outputs[output_name]
 
             for elem in outputs:

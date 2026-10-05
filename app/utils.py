@@ -1059,3 +1059,10 @@ def input_is_set(name, template_inputs):
     if value is None:
         return False
     return str(value).strip().lower() not in ('', '0', 'false', 'no', 'none', 'null')
+
+
+def output_condition_matches(condition, template_inputs):
+    negated = condition.startswith('!')
+    input_name = condition[1:] if negated else condition
+    input_set = input_is_set(input_name, template_inputs)
+    return input_set != negated
