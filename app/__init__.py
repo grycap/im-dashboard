@@ -776,6 +776,7 @@ def create_app(oidc_blueprint=None):
                 output_descriptions = {
                     name: definition.get('description')
                     for name, definition in template_outputs.items()
+                    if isinstance(definition, dict) and definition.get('description')
                 }
 
                 for output_name in list(outputs):
