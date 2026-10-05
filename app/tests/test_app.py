@@ -94,15 +94,15 @@ class IMDashboardTests(unittest.TestCase):
                                num_cpus:
                                  type: integer
                                  default: 4
-                             param1:
-                               type: string
-                               description: Param1 description
-                               default: ''
-                           outputs:
-                             key:
-                               description: Basic output
-                             key2:
-                               description: Service URL
+                               param1:
+                                 type: string
+                                 description: Param1 description
+                                 default: ''
+                             outputs:
+                               key:
+                                 description: Basic output
+                               key2:
+                                 description: Service URL
                              node_templates:
                                 simple_node:
                                         type: tosca.nodes.indigo.Compute"""
@@ -118,7 +118,8 @@ class IMDashboardTests(unittest.TestCase):
             resp.ok = True
             resp.status_code = 200
             resp.json.return_value = {"outputs": {"key": "value", "key2": "http://server.com",
-                                                  "key3": "https://['server2.com','server3.com']/path"}}
+                                                  "key3": "https://['server2.com','server3.com']/path",
+                                                  "hidden_output": "should not appear"}}
         elif url == "/im/infrastructures/infid/radl":
             resp.ok = True
             resp.status_code = 200
