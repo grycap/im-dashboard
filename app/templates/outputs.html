@@ -2,14 +2,14 @@
           <table id="tableServices" class="table table-bordered table-striped" width="100%" cellspacing="0">
             <thead>
                 <tr>
-                    <th>Field Name</th>
+                    <th>Output</th>
                     <th>Value</th>
                 </tr>
             </thead>
             <tbody>
               {% for field, value in outputs | dictsort: %}
                 <tr>
-                  <td>{{ field }}</td>
+                  <td>{{ output_descriptions.get(field, field) }}</td>
                   <td>
                     {% if value %}
                       {% if 'token' in value and 'user' in value and 'token_type' in value and value['token_type'] == 'private_key' %}
