@@ -1048,3 +1048,14 @@ def merge_templates(template, new_template):
         template["metadata"]["tabs"].update(tabs)
 
     return template
+
+
+def input_is_set(name, template_inputs):
+    value = template_inputs.get(name, {})
+    if isinstance(value, dict):
+        value = value.get('value', value.get('default'))
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return False
+    return str(value).strip().lower() not in ('', '0', 'false', 'no', 'none', 'null')

@@ -78,6 +78,9 @@ class IMDashboardTests(unittest.TestCase):
             resp.status_code = 200
             resp.text = """
                            metadata:
+                             outputs:
+                               hidden_output:
+                                 enabled_by: [param1]
                              tabs:
                                 Tab1:
                                   - param1:
@@ -91,10 +94,15 @@ class IMDashboardTests(unittest.TestCase):
                                num_cpus:
                                  type: integer
                                  default: 4
-                               param1:
-                                 type: string
-                                 description: Param1 description
-                                 default: ''
+                             param1:
+                               type: string
+                               description: Param1 description
+                               default: ''
+                           outputs:
+                             key:
+                               description: Basic output
+                             key2:
+                               description: Service URL
                              node_templates:
                                 simple_node:
                                         type: tosca.nodes.indigo.Compute"""
@@ -479,8 +487,12 @@ class IMDashboardTests(unittest.TestCase):
         self.login(avatar)
         res = self.client.get('/outputs/infid')
         self.assertEqual(200, res.status_code)
-        self.assertIn(b'key', res.data)
-        self.assertIn(b'key2', res.data)
+        self.assertIn(b'Basic output', res.data)
+        self.assertIn(b'Service URL', res.data)
+        # Outputs without a TOSCA description keep their technical name.
+        self.assertIn(b'key3', res.data)
+        # param1 defaults to an empty string, so this output is hidden.
+        self.assertNotIn(b'hidden_output', res.data)
         self.assertIn(b'value', res.data)
         self.assertIn(b"<a href='http://server.com' target='_blank'>http://server.com</a>", res.data)
         self.assertIn(b"<a href='https://server2.com/path' target='_blank'>https://server2.com/path</a>", res.data)
