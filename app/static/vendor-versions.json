@@ -1,0 +1,251 @@
+{
+  "bootstrap": {
+    "version": "5.3.8",
+    "tarball": "https://registry.npmjs.org/bootstrap/-/bootstrap-5.3.8.tgz",
+    "integrity": "sha512-HP1SZDqaLDPwsNiqRqi5NcP0SSXciX2s9E+RyqJIIqGo+vJeN5AJVM98CXmW/Wux0nQ5L7jeWUdplCEf0Ee+tg==",
+    "files": [],
+    "retained_files": [
+      "css/bootstrap.min.css",
+      "css/bootstrap.min.css.map",
+      "js/bootstrap.min.js",
+      "js/bootstrap.min.js.map"
+    ]
+  },
+  "@popperjs/core": {
+    "version": "2.11.8",
+    "tarball": "https://registry.npmjs.org/@popperjs/core/-/core-2.11.8.tgz",
+    "integrity": "sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==",
+    "files": [],
+    "retained_files": [
+      "js/popper.min.js",
+      "js/popper.min.js.map"
+    ]
+  },
+  "jquery": {
+    "version": "4.0.0",
+    "tarball": "https://registry.npmjs.org/jquery/-/jquery-4.0.0.tgz",
+    "integrity": "sha512-TXCHVR3Lb6TZdtw1l3RTLf8RBWVGexdxL6AC8/e0xZKEpBflBsjh9/8LXw+dkNFuOyW9B7iB3O1sP7hS0Kiacg==",
+    "files": [
+      {
+        "source": "dist/jquery.min.js",
+        "destination": "js/jquery-4.0.0.min.js"
+      },
+      {
+        "source": "dist/jquery.min.map",
+        "destination": "js/jquery.min.map"
+      }
+    ]
+  },
+  "datatables.net": {
+    "version": "3.0.4",
+    "tarball": "https://registry.npmjs.org/datatables.net/-/datatables.net-3.0.4.tgz",
+    "integrity": "sha512-jbT0Pc4Xq1i5kTYVhqg0vh11DsqWj3AkgVgdJLUqK7264Xi+QWLI4ekee8X50sRPKzJQxaXDHrxh5hnGO49BqQ==",
+    "files": [
+      {
+        "source": "js/dataTables.min.js",
+        "destination": "js/dataTables.bootstrap5.min.js"
+      }
+    ]
+  },
+  "datatables.net-bs5": {
+    "version": "3.0.4",
+    "tarball": "https://registry.npmjs.org/datatables.net-bs5/-/datatables.net-bs5-3.0.4.tgz",
+    "integrity": "sha512-LoI5dVCM7qAoDLFcx27ANHi0T9sMjtiYowpzf2qBvltgp2PFBRed0wVyk7ScWkrXXWwb7sSbA1MIauF5oOotnw==",
+    "files": [
+      {
+        "source": "js/dataTables.bootstrap5.min.js",
+        "destination": "js/dataTables.bootstrap5.min.js"
+      },
+      {
+        "source": "css/dataTables.bootstrap5.min.css",
+        "destination": "css/dataTables.bootstrap5.min.css"
+      }
+    ]
+  },
+  "datatables.net-responsive": {
+    "version": "4.0.3",
+    "tarball": "https://registry.npmjs.org/datatables.net-responsive/-/datatables.net-responsive-4.0.3.tgz",
+    "integrity": "sha512-vppRDj6X7EaRPR8QFbLrxf+2Accr50g28Zpy4tTRYwpTx8x6akVVcT2ZAXX3zL8b0fxT+rKFAnzwsO8g87977g==",
+    "files": [
+      {
+        "source": "js/dataTables.responsive.min.js",
+        "destination": "js/dataTables.bootstrap5.min.js"
+      }
+    ]
+  },
+  "datatables.net-responsive-bs5": {
+    "version": "4.0.3",
+    "tarball": "https://registry.npmjs.org/datatables.net-responsive-bs5/-/datatables.net-responsive-bs5-4.0.3.tgz",
+    "integrity": "sha512-C0xD0Qh5iUaswPwtKaUyNpcGGFEq2OiduMLGysbQUZtp7b4EoHHqmzVGgGayuljmwpxKYbU2B4VrFG/8mZ1A/g==",
+    "files": [
+      {
+        "source": "js/responsive.bootstrap5.min.js",
+        "destination": "js/dataTables.bootstrap5.min.js"
+      },
+      {
+        "source": "css/responsive.bootstrap5.min.css",
+        "destination": "css/dataTables.bootstrap5.min.css"
+      }
+    ]
+  },
+  "datatables.net-scroller": {
+    "version": "3.0.0",
+    "tarball": "https://registry.npmjs.org/datatables.net-scroller/-/datatables.net-scroller-3.0.0.tgz",
+    "integrity": "sha512-nGcwNfEW+vmp0MJSnZikPlUvu7p6LEHLbOdAZ7C71Ec91/7cWJCskk+FKsdLAstpAG+vL/a5yOmbV6l8jYjv8w==",
+    "files": [
+      {
+        "source": "js/dataTables.scroller.min.js",
+        "destination": "js/dataTables.bootstrap5.min.js"
+      }
+    ]
+  },
+  "datatables.net-scroller-bs5": {
+    "version": "3.0.0",
+    "tarball": "https://registry.npmjs.org/datatables.net-scroller-bs5/-/datatables.net-scroller-bs5-3.0.0.tgz",
+    "integrity": "sha512-QlMaeiCrWBvkUIgB+eNk39YZbeTnl8sxCYnCEjKKmLKCyEn9PeuqhJ6HSVB8liTzs0MIn1SRNUNpxDssvbpJyg==",
+    "files": [
+      {
+        "source": "js/scroller.bootstrap5.min.js",
+        "destination": "js/dataTables.bootstrap5.min.js"
+      },
+      {
+        "source": "css/scroller.bootstrap5.min.css",
+        "destination": "css/dataTables.bootstrap5.min.css"
+      }
+    ]
+  },
+  "@fortawesome/fontawesome-free": {
+    "version": "7.3.1",
+    "tarball": "https://registry.npmjs.org/@fortawesome/fontawesome-free/-/fontawesome-free-7.3.1.tgz",
+    "integrity": "sha512-wmglKKPDIkgV3aWlZzWECCPoGIkYCulzBwxG9+w7rc5BGapZ6cPMpoPOT8k36J0Ni7PPX6c/rsoMWfS4d1MUMg==",
+    "files": [
+      {
+        "source": "css/fontawesome.min.css",
+        "destination": "css/fontawesome.min.css"
+      },
+      {
+        "source": "css/brands.min.css",
+        "destination": "css/brands.min.css"
+      },
+      {
+        "source": "css/regular.min.css",
+        "destination": "css/regular.min.css"
+      },
+      {
+        "source": "css/solid.min.css",
+        "destination": "css/solid.min.css"
+      },
+      {
+        "source": "webfonts/fa-brands-400.woff2",
+        "destination": "webfonts/fa-brands-400.woff2"
+      },
+      {
+        "source": "webfonts/fa-regular-400.woff2",
+        "destination": "webfonts/fa-regular-400.woff2"
+      },
+      {
+        "source": "webfonts/fa-solid-900.woff2",
+        "destination": "webfonts/fa-solid-900.woff2"
+      },
+      {
+        "source": "webfonts/fa-v4compatibility.woff2",
+        "destination": "webfonts/fa-v4compatibility.woff2"
+      }
+    ]
+  },
+  "select2": {
+    "version": "4.1.0",
+    "tarball": "https://registry.npmjs.org/select2/-/select2-4.1.0.tgz",
+    "integrity": "sha512-i9KalWOP4/LRRGc8+rj2krNm0ZqP14cV+j1TRCEBSsOhCPkKH8rYZ2MCRXcgvqIqN+llqGci0hj9aVkCMvL0+g==",
+    "files": [
+      {
+        "source": "dist/js/select2.min.js",
+        "destination": "js/select2.min.js"
+      },
+      {
+        "source": "dist/css/select2.min.css",
+        "destination": "css/select2.min.css"
+      }
+    ]
+  },
+  "select2-bootstrap-5-theme": {
+    "version": "1.3.0",
+    "tarball": "https://registry.npmjs.org/select2-bootstrap-5-theme/-/select2-bootstrap-5-theme-1.3.0.tgz",
+    "integrity": "sha512-uEJDruP4tmwyKcs3V0oP7CIsyC45PGF5ddo8unwTp8OucJ1PSuTOBr+xbWaHTQPGnvp7N96psVQ5UBMQvFCcHA==",
+    "files": [],
+    "retained_files": [
+      "css/select2-bootstrap-5-theme.min.css"
+    ]
+  },
+  "bootstrap5-toggle": {
+    "version": "5.4.1",
+    "tarball": "https://registry.npmjs.org/bootstrap5-toggle/-/bootstrap5-toggle-5.4.1.tgz",
+    "integrity": "sha512-+Em3YLPINxGeXxMbgIG0Q7H4VfPSnnLfr9Ocr4uJGzaX1tXNUNRZb/yDZ10kA2IM2Y1g7bYRinZEOObFkNSE9g==",
+    "files": [
+      {
+        "source": "js/bootstrap5-toggle.jquery.min.js",
+        "destination": "js/bootstrap5-toggle.jquery.min.js"
+      },
+      {
+        "source": "js/bootstrap5-toggle.jquery.min.js.map",
+        "destination": "js/bootstrap5-toggle.jquery.min.js.map"
+      },
+      {
+        "source": "css/bootstrap5-toggle.min.css",
+        "destination": "css/bootstrap5-toggle.min.css"
+      },
+      {
+        "source": "css/bootstrap5-toggle.min.css.map",
+        "destination": "css/bootstrap5-toggle.min.css.map"
+      }
+    ]
+  },
+  "bootstrap-show-password": {
+    "version": "1.3.0",
+    "tarball": "https://registry.npmjs.org/bootstrap-show-password/-/bootstrap-show-password-1.3.0.tgz",
+    "integrity": "sha512-CSBAQFAK4qR0GDTDToRIDpFOwMTesVC+ipanHelssts2L72nnpbCpfs99iEPhCMyhXinA9yNIy53r3McuwigIA==",
+    "files": [],
+    "retained_files": [
+      "js/bootstrap-show-password.min.js"
+    ]
+  },
+  "prismjs": {
+    "version": "1.30.0",
+    "tarball": "https://registry.npmjs.org/prismjs/-/prismjs-1.30.0.tgz",
+    "integrity": "sha512-DEvV2ZF2r2/63V+tK8hQvrR2ZGn10srHbXviTlcv7Kpzw8jWiNTqbVgjO3IY8RxrrOUF8VPMQQFysYYYv0YZxw==",
+    "files": [
+      {
+        "source": "components/prism-core.min.js",
+        "destination": "js/prism-core.min.js"
+      },
+      {
+        "source": "components/prism-yaml.min.js",
+        "destination": "js/prism-yaml.min.js"
+      },
+      {
+        "source": "themes/prism.min.css",
+        "destination": "css/prism.min.css"
+      }
+    ]
+  },
+  "dotdotdot-js": {
+    "version": "4.2.0",
+    "tarball": "https://registry.npmjs.org/dotdotdot-js/-/dotdotdot-js-4.2.0.tgz",
+    "integrity": "sha512-2NiX2ya+i5v/QisBFg85VSyGg3HIbEryK8hNgv31FLF9CQM9nBFZb5kPTbubG0vflFmY8qyTyNZ3ElmEzNt2Lw==",
+    "files": [
+      {
+        "source": "dist/dotdotdot.js",
+        "destination": "js/dotdotdot.js"
+      }
+    ]
+  },
+  "cookieconsent": {
+    "version": "4.2.0",
+    "url": "https://www.termsfeed.com/public/cookie-consent/4.2.0/cookie-consent-code.js",
+    "file": "js/cookieconsent-4.2.0.min.js",
+    "sha256": "e25154b0a0a01305ce6dd8c89bd3d7c70d5166ae755665e8623888f76f405c55",
+    "modifications": [
+      "Removed unavailable upstream sourceMappingURL (HTTP 403)."
+    ]
+  }
+}

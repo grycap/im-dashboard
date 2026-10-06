@@ -78,6 +78,9 @@ class IMDashboardTests(unittest.TestCase):
             resp.status_code = 200
             resp.text = """
                            metadata:
+                             outputs:
+                               hidden_output:
+                                 enabled_by: [param1]
                              tabs:
                                 Tab1:
                                   - param1:
@@ -95,6 +98,11 @@ class IMDashboardTests(unittest.TestCase):
                                  type: string
                                  description: Param1 description
                                  default: ''
+                             outputs:
+                               key:
+                                 description: Basic output
+                               key2:
+                                 description: Service URL
                              node_templates:
                                 simple_node:
                                         type: tosca.nodes.indigo.Compute"""
@@ -110,7 +118,8 @@ class IMDashboardTests(unittest.TestCase):
             resp.ok = True
             resp.status_code = 200
             resp.json.return_value = {"outputs": {"key": "value", "key2": "http://server.com",
-                                                  "key3": "https://['server2.com','server3.com']/path"}}
+                                                  "key3": "https://['server2.com','server3.com']/path",
+                                                  "hidden_output": "should not appear"}}
         elif url == "/im/infrastructures/infid/radl":
             resp.ok = True
             resp.status_code = 200
@@ -479,8 +488,12 @@ class IMDashboardTests(unittest.TestCase):
         self.login(avatar)
         res = self.client.get('/outputs/infid')
         self.assertEqual(200, res.status_code)
-        self.assertIn(b'key', res.data)
-        self.assertIn(b'key2', res.data)
+        self.assertIn(b'Basic output', res.data)
+        self.assertIn(b'Service URL', res.data)
+        # Outputs without a TOSCA description keep their technical name.
+        self.assertIn(b'key3', res.data)
+        # param1 defaults to an empty string, so this output is hidden.
+        self.assertNotIn(b'hidden_output', res.data)
         self.assertIn(b'value', res.data)
         self.assertIn(b"<a href='http://server.com' target='_blank'>http://server.com</a>", res.data)
         self.assertIn(b"<a href='https://server2.com/path' target='_blank'>https://server2.com/path</a>", res.data)
@@ -640,6 +653,8 @@ class IMDashboardTests(unittest.TestCase):
         self.assertEqual(302, res.status_code)
         self.assertIn('/infrastructures', res.headers['location'])
         self.assertEqual(flash.call_count, 0)
+        payload = yaml.safe_load(post.call_args_list[0][1]["data"])
+        self.assertEqual([], payload["metadata"]["childs"])
 
     @patch('app.utils.get_site_info')
     @patch("app.utils.getUserAuthData")
@@ -768,7 +783,10 @@ class IMDashboardTests(unittest.TestCase):
         get_project_ids.return_value = {}
         get_sites.return_value = {"SITE_NAME": {"url": "URL", "state": "", "id": ""},
                                   "SITE2": {"url": "URL2", "state": "CRITICAL", "id": ""}}
-        get_creds.return_value = [{"id": "credid", "type": "fedcloud", "host": "site_url", "project_id": "project"}]
+        get_creds.return_value = [{"id": "credid", "type": "fedcloud", "host": "site_url",
+                                   "project_id": "project", "enabled": 1},
+                                  {"id": "disabled", "type": "fedcloud", "host": "disabled_url",
+                                   "project_id": "disabled_project", "enabled": 0}]
         res = self.client.get('/manage_creds')
         self.assertEqual(200, res.status_code)
         self.assertIn(b'credid', res.data)
@@ -778,7 +796,7 @@ class IMDashboardTests(unittest.TestCase):
         res = self.client.get('/manage_creds?json=1')
         self.assertEqual(200, res.status_code)
         self.assertEqual(json.loads(res.data), [{"id": "credid", "type": "fedcloud", "host": "site_url",
-                                                 "project_id": "project"}])
+                                                 "project_id": "project", "enabled": 1}])
 
     @patch("app.utils.avatar")
     @patch("app.db_cred.DBCredentials.get_cred")

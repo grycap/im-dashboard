@@ -6,19 +6,23 @@
   let selected_templates = Array();
   function AddChild(link, template) {
     if (selected_templates.includes(template)) {
-      document.getElementById(template).classList.remove("selected-addon");
       pos = selected_templates.indexOf(template);
       selected_templates.splice(pos, 1)
-      link.innerHTML = "<span class='fas fa-plus mr-2'></span> Add";
-      link.classList.remove("btn-danger");
-      link.classList.add("btn-primary");
     } else {
-      document.getElementById(template).classList.add("selected-addon");
       selected_templates.push(template);
-      link.innerHTML = "<span class='fas fa-minus mr-2'></span> Remove";
-      link.classList.remove("btn-primary");
-      link.classList.add("btn-danger");
     }
+
+    document.querySelectorAll(".template-card").forEach(function(card) {
+      if (card.dataset.templateName !== template) return;
+      const selected = selected_templates.includes(template);
+      const button = card.querySelector(".add-child");
+      card.classList.toggle("selected-addon", selected);
+      button.innerHTML = selected
+        ? "<span class='fas fa-minus mr-2'></span> Remove"
+        : "<span class='fas fa-plus mr-2'></span> Add";
+      button.classList.toggle("btn-danger", selected);
+      button.classList.toggle("btn-primary", !selected);
+    });
   } 
 
 
@@ -40,11 +44,28 @@
     </div>
     {% endif %}
 
-  <div class="card-deck" id="templates">
+  {% if grouped_templates|length > 1 %}
+  <ul class="nav nav-tabs mb-4" id="template-groups" role="tablist">
+    {% for group_name in grouped_templates %}
+    <li class="nav-item" role="presentation">
+      <button class="nav-link{% if loop.first %} active{% endif %}" id="template-group-tab-{{ loop.index0 }}"
+              data-bs-toggle="tab" data-bs-target="#template-group-{{ loop.index0 }}" type="button"
+              role="tab" aria-controls="template-group-{{ loop.index0 }}"
+              aria-selected="{{ 'true' if loop.first else 'false' }}">{{ group_name }}</button>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <div class="tab-content" id="templates">
+
+ {% for group_name, group_templates in grouped_templates.items() %}
+  <div class="tab-pane fade{% if loop.first %} show active{% endif %}" id="template-group-{{ loop.index0 }}"
+       role="tabpanel" aria-labelledby="template-group-tab-{{ loop.index0 }}" tabindex="0">
 
 <!-- Not very pretty code to hide templates VO based -->
  {% set vars = {'template_count': 0, 'enabled_vos': True} %}
- {% for tosca_filename, tosca in templates.items() %}
+ {% for tosca_filename, tosca in group_templates.items() %}
     {% if vars.update({'enabled_vos': True}) %} {% endif %}
     {% if tosca['metadata']['vos'] is defined %}
       {% if vars.update({'enabled_vos': False}) %} {% endif %}
@@ -63,7 +84,8 @@
     <div class="row row-cols-3">
     {% endif %}
 
-        <div class="card mb-3 bg-light-grey card-rounded border-0 ms-3 pe-0" id="{{tosca_filename}}" style="min-height: 190px;">
+        <div class="card template-card mb-3 bg-light-grey card-rounded border-0 ms-3 pe-0"
+             data-template-name="{{ tosca_filename }}" style="min-height: 190px;">
         
             <div class="card-body">
               <h5 class="card-title text-center">
@@ -108,7 +130,7 @@
                 </a>
                 <a style="--bs-btn-font-size: .65rem;" selector="toscaDescription" class="text-start btn btn-sm btn-info read_more" tabindex="0" data-bs-toggle="popover" title="Full description" data-bs-trigger="focus" data-bs-content="{{tosca['description']}} {{ 'Addons: ' + tosca['metadata']['addons'] if tosca['metadata']['addons'] is defined }}">Read More</a>
                 {% if parent %}
-                <a style="--bs-btn-font-size: .65rem;" href="#!" onclick="AddChild(this, '{{tosca_filename}}')" class="btn btn-sm btn-primary"><span class='fas fa-plus mr-2'></span> Add</a>
+                <a style="--bs-btn-font-size: .65rem;" href="#!" onclick="AddChild(this, '{{tosca_filename}}')" class="add-child btn btn-sm btn-primary"><span class='fas fa-plus mr-2'></span> Add</a>
                 {% elif 'link' in tosca['metadata'] %}
                 <a style="--bs-btn-font-size: .65rem;" class="btn btn-sm btn-primary" href="{{ url_for('configure', selected_tosca=tosca['metadata']['link']['parent'], childs=tosca['metadata']['link']['childs']|join(',')) }}">Configure <span class="fas fa-arrow-right mr-2"></span></a>
                 {% else %}
@@ -126,7 +148,9 @@
     {% if vars['template_count'] % 3 != 0 %}
     </div>
     {% endif %}
-    
+
+  </div>
+ {% endfor %}
 
   </div>
   {% if parent %}

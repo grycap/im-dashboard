@@ -450,6 +450,28 @@ def extractToscaInfo(toscaDir, toscaTemplates, tags_to_hide):
     return toscaInfoOrder
 
 
+def group_tosca_templates(templates, default_group="General"):
+    """Group TOSCA templates using their metadata ``groups`` field."""
+    grouped_templates = OrderedDict()
+
+    for filename, template in templates.items():
+        groups = template.get("metadata", {}).get("groups")
+        if isinstance(groups, str):
+            groups = [groups]
+        elif not isinstance(groups, (list, tuple, set)):
+            groups = []
+
+        groups = [str(group).strip() for group in groups if group is not None and str(group).strip()]
+        if not groups:
+            groups = [default_group]
+
+        # Avoid rendering the same template twice if a group is repeated.
+        for group in dict.fromkeys(groups):
+            grouped_templates.setdefault(group, OrderedDict())[filename] = template
+
+    return grouped_templates
+
+
 def generate_random_name():
     left = [
         "admiring",
@@ -1025,4 +1047,30 @@ def merge_templates(template, new_template):
             template["metadata"]["tabs"] = {}
         template["metadata"]["tabs"].update(tabs)
 
+    output_metadata = new_template.get("metadata", {}).get("outputs", {})
+    if output_metadata:
+        if "metadata" not in template:
+            template["metadata"] = {}
+        if "outputs" not in template["metadata"]:
+            template["metadata"]["outputs"] = {}
+        template["metadata"]["outputs"].update(output_metadata)
+
     return template
+
+
+def input_is_set(name, template_inputs):
+    value = template_inputs.get(name, {})
+    if isinstance(value, dict):
+        value = value.get('value', value.get('default'))
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return False
+    return str(value).strip().lower() not in ('', '0', 'false', 'no', 'none', 'null')
+
+
+def output_condition_matches(condition, template_inputs):
+    negated = condition.startswith('!')
+    input_name = condition[1:] if negated else condition
+    input_set = input_is_set(input_name, template_inputs)
+    return input_set != negated

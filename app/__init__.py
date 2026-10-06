@@ -272,7 +272,12 @@ def create_app(oidc_blueprint=None):
             next_url = session.pop("next")
             return redirect(url_for('home') + next_url[1:])
         else:
-            return render_template('portfolio.html', templates=templates, parent=None)
+            visible_templates = {
+                name: template for name, template in templates.items()
+                if utils.valid_template_vos(session["vos"], template["metadata"])
+            }
+            return render_template('portfolio.html', templates=templates,
+                                   grouped_templates=utils.group_tosca_templates(visible_templates), parent=None)
 
     @app.route('/vminfo')
     @authorized_with_valid_token
@@ -751,12 +756,39 @@ def create_app(oidc_blueprint=None):
         access_token = oidc_blueprint.session.token['access_token']
         auth_data = utils.getIMUserAuthData(access_token, cred, get_cred_id())
         outputs = {}
+        output_descriptions = {}
         try:
             response = im.get_inf_property(infid, 'outputs', auth_data)
             if not response.ok:
                 raise Exception(response.text)
 
             outputs = response.json()["outputs"]
+
+            # Output visibility rules are declared in the infrastructure TOSCA
+            # metadata as metadata.outputs.<output>.enabled_by. Each entry in
+            # enabled_by is an input name (truthy) or !input name (falsy).
+            tosca_response = im.get_inf_property(infid, 'tosca', auth_data)
+            if tosca_response.ok:
+                tosca_template = yaml.safe_load(tosca_response.text) or {}
+                output_rules = (tosca_template.get('metadata') or {}).get('outputs') or {}
+                template_outputs = ((tosca_template.get('topology_template') or {}).get('outputs') or {})
+                template_inputs = ((tosca_template.get('topology_template') or {}).get('inputs') or {})
+
+                output_descriptions = {
+                    name: definition.get('description')
+                    for name, definition in template_outputs.items()
+                    if isinstance(definition, dict) and definition.get('description')
+                }
+
+                for output_name in list(outputs):
+                    rule = output_rules.get(output_name, {})
+                    conditions = rule.get('enabled_by', []) if isinstance(rule, dict) else []
+                    if isinstance(conditions, str):
+                        conditions = [conditions]
+                    if conditions and not all(utils.output_condition_matches(condition, template_inputs)
+                                              for condition in conditions):
+                        del outputs[output_name]
+
             for elem in outputs:
                 if isinstance(outputs[elem], str) and (outputs[elem].startswith('http://') or
                                                        outputs[elem].startswith('https://')):
@@ -764,7 +796,8 @@ def create_app(oidc_blueprint=None):
         except Exception as ex:
             flash("Error: %s." % ex, 'error')
 
-        return render_template('outputs.html', infid=infid, outputs=outputs)
+        return render_template('outputs.html', infid=infid, outputs=outputs,
+                               output_descriptions=output_descriptions)
 
     @app.route('/configure')
     @authorized_with_valid_token
@@ -831,7 +864,9 @@ def create_app(oidc_blueprint=None):
                 for child in toscaInfo[selected_tosca]["metadata"]["childs"]:
                     if child in toscaInfo and utils.valid_template_vos(session['vos'], toscaInfo[child]["metadata"]):
                         child_templates[child] = toscaInfo[child]
-                return render_template('portfolio.html', templates=child_templates, parent=selected_tosca)
+                return render_template('portfolio.html', templates=child_templates,
+                                       grouped_templates=utils.group_tosca_templates(child_templates),
+                                       parent=selected_tosca)
         else:
             app.logger.debug("Template: " + json.dumps(toscaInfo[selected_tosca]))
 
@@ -1461,7 +1496,6 @@ def create_app(oidc_blueprint=None):
         if 'metadata' not in template:
             template['metadata'] = {}
         template['metadata']['filename'] = request.args.get('template')
-        template['metadata']['childs'] = childs
 
         if priv_network_id and pub_network_id:
             template = add_network_id_to_template(template, priv_network_id, pub_network_id)
@@ -1483,6 +1517,9 @@ def create_app(oidc_blueprint=None):
         template = set_inputs_to_template(template, inputs)
 
         template = remove_unnecessary_metadata(template)
+        # Keep the selected children for delete-and-recreate. The parent's
+        # original metadata lists every available child, not the chosen ones.
+        template['metadata']['childs'] = childs
 
         payload = yaml.dump(template, default_flow_style=False, sort_keys=False)
 
@@ -1523,6 +1560,7 @@ def create_app(oidc_blueprint=None):
             flash("Error retrieving credentials: \n" + str(e), 'warning')
 
         if request.args.get('json', 0):
+            creds = [c for c in creds if c.get('enabled')]
             template = request.args.get('template')
             tag = None
             if template:

@@ -214,7 +214,7 @@
                         <a id="main_button_{{infId}}" type="button" class="text-white btn btn-primary btn-sm" href="{{ url_for('inflog', infid=infId) }}">
                           <span class="fas fa-file-alt mr-2"></span>Log
                         </a>
-                        <button id="toggle_button_{{infId}}" type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">
+                        <button id="toggle_button_{{infId}}" type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" data-bs-config='{"popperConfig":{"strategy":"fixed"}}'>
                         </button>
                         <div class="dropdown-menu">
                           <a id="addresources_{{infId}}_a" class="dropdown-item" href="{{ url_for('addresources', infid=infId) }}"><span class="fas fa-plus mr-2 grey-text"></span> Add nodes</a>

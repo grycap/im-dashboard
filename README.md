@@ -97,6 +97,21 @@ In particular, the following tags are supported:
 | metadata.icon . |  Used for showing the card image. If no image URL is provided, the dashboard will load this [icon](https://cdn4.iconfinder.com/data/icons/mosaicon-04/512/websettings-512.png). |
 | metadata.display_name | Used for the card title. If not provided, the template name will be used   |               |
 | metadata.tag | Used for the card ribbon (displayed on the right bottom corner)   |               |
+| metadata.groups | Group or list of groups used to organize portfolio cards in tabs. Templates without a group are shown under `General`. Tabs are hidden when there is only one group. | |
+| metadata.outputs | Optional output visibility rules. Each output can define `enabled_by` as a list of input names; prefix a name with `!` to require its value to be empty/false. All conditions must match for that output to be shown. Outputs without a rule remain visible. | |
+
+The output table uses each output's `description` from `topology_template.outputs` in place of its technical name. If no description is defined, it displays the output name.
+
+Example of conditional outputs:
+
+```yaml
+metadata:
+  outputs:
+    vllm_url:
+      enabled_by: [vllm_api_key, "!dns_name"]
+    vllm_dns_url:
+      enabled_by: [vllm_api_key, dns_name]
+```
 
 Example of template metadata:
 
@@ -111,6 +126,8 @@ description: Deploy a Mesos Cluster (with Marathon and Chronos frameworks) on to
 metadata:
   display_name: Deploy a Mesos cluster
   icon: https://indigo-paas.cloud.ba.infn.it/public/images/apache-mesos-icon.png
+  groups:
+    - Container orchestration
 
 topology_template:
 

@@ -70,11 +70,47 @@ class TestUtils(unittest.TestCase):
             self.assertEqual(res, ("Bearer token"))
 
     def test_merge_template(self):
-        template = {"topology_template": {"node_templates": {"n1": {"type": "Compute"}}}}
-        template2 = {"topology_template": {"node_templates": {"n2": {"type": "Compute"}}}}
+        template = {
+            "metadata": {"outputs": {"existing": {"enabled_by": ["first"]}}},
+            "topology_template": {"node_templates": {"n1": {"type": "Compute"}}}
+        }
+        template2 = {
+            "metadata": {
+                "tabs": {"Extra": ["input"]},
+                "outputs": {"additional": {"enabled_by": ["second"]}}
+            },
+            "topology_template": {"node_templates": {"n2": {"type": "Compute"}}}
+        }
         new_template = utils.merge_templates(template, template2)
-        self.assertEqual(new_template, {"topology_template": {"node_templates": {"n1": {"type": "Compute"},
-                                                                                 "n2": {"type": "Compute"}}}})
+        self.assertEqual(new_template, {
+            "metadata": {
+                "outputs": {
+                    "existing": {"enabled_by": ["first"]},
+                    "additional": {"enabled_by": ["second"]}
+                },
+                "tabs": {"Extra": ["input"]}
+            },
+            "topology_template": {"node_templates": {
+                "n1": {"type": "Compute"},
+                "n2": {"type": "Compute"}
+            }}
+        })
+
+    def test_group_tosca_templates(self):
+        templates = {
+            "general.yml": {"metadata": {}},
+            "compute.yml": {"metadata": {"groups": ["Compute", "Featured", "Compute"]}},
+            "storage.yml": {"metadata": {"groups": "Storage"}},
+            "empty.yml": {"metadata": {"groups": []}},
+            "null.yml": {"metadata": {"groups": [None, ""]}},
+        }
+
+        grouped = utils.group_tosca_templates(templates)
+
+        self.assertEqual(list(grouped), ["General", "Compute", "Featured", "Storage"])
+        self.assertEqual(list(grouped["General"]), ["general.yml", "empty.yml", "null.yml"])
+        self.assertEqual(list(grouped["Compute"]), ["compute.yml"])
+        self.assertEqual(list(grouped["Featured"]), ["compute.yml"])
 
 
 if __name__ == '__main__':
