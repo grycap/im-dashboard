@@ -1560,6 +1560,7 @@ def create_app(oidc_blueprint=None):
             flash("Error retrieving credentials: \n" + str(e), 'warning')
 
         if request.args.get('json', 0):
+            creds = [c for c in creds if c.get('enabled')]
             template = request.args.get('template')
             tag = None
             if template:

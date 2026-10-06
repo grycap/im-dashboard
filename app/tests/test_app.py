@@ -783,7 +783,10 @@ class IMDashboardTests(unittest.TestCase):
         get_project_ids.return_value = {}
         get_sites.return_value = {"SITE_NAME": {"url": "URL", "state": "", "id": ""},
                                   "SITE2": {"url": "URL2", "state": "CRITICAL", "id": ""}}
-        get_creds.return_value = [{"id": "credid", "type": "fedcloud", "host": "site_url", "project_id": "project"}]
+        get_creds.return_value = [{"id": "credid", "type": "fedcloud", "host": "site_url",
+                                   "project_id": "project", "enabled": 1},
+                                  {"id": "disabled", "type": "fedcloud", "host": "disabled_url",
+                                   "project_id": "disabled_project", "enabled": 0}]
         res = self.client.get('/manage_creds')
         self.assertEqual(200, res.status_code)
         self.assertIn(b'credid', res.data)
@@ -793,7 +796,7 @@ class IMDashboardTests(unittest.TestCase):
         res = self.client.get('/manage_creds?json=1')
         self.assertEqual(200, res.status_code)
         self.assertEqual(json.loads(res.data), [{"id": "credid", "type": "fedcloud", "host": "site_url",
-                                                 "project_id": "project"}])
+                                                 "project_id": "project", "enabled": 1}])
 
     @patch("app.utils.avatar")
     @patch("app.db_cred.DBCredentials.get_cred")
