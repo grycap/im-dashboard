@@ -25,6 +25,7 @@ class Settings:
     def __init__(self, config):
         """Creator function."""
         self.version = "2.7.0"
+        self.secret_key = config.get('SECRET_KEY', 'my_secret_key')
         self.toscaDir = config.get('TOSCA_TEMPLATES_DIR', '') + "/"
         self.imUrl = config['IM_URL']
         self.oidcName = config['OIDC_NAME']
