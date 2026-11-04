@@ -233,7 +233,7 @@
                    // TODO: show the resources in the pie chart
 
                    for (var i = 0; i < resource_types.length; i++) {
-                       if (quotas[resource_types[i]]["limit"] <= 0) {
+                       if (quotas[resource_types[i]]["limit"] < 0) {
                                // -1 value means no limit, set a big value
                                quotas[resource_types[i]]["limit"] = 10000;
                        }
