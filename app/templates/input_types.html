@@ -38,7 +38,12 @@
 
     <!-- password type -->
     {% elif value.tag_type == "password" %}
-      <input type="password" class="form-control" id="{{key}}" name="{{key}}" placeholder="Enter your password" {% if value.required %}required{%endif%} {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%} >
+      <div class="input-group">
+        <input type="password" class="form-control" id="{{key}}" name="{{key}}" placeholder="Enter your password" {% if value.required %}required{%endif%} {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%} >
+        <button type="button" class="btn btn-outline-secondary" style="border-color: var(--bs-border-color);" aria-label="Show password" aria-pressed="false" onclick="var input = this.previousElementSibling; var show = input.type === 'password'; input.type = show ? 'text' : 'password'; this.setAttribute('aria-label', show ? 'Hide password' : 'Show password'); this.setAttribute('aria-pressed', show); this.firstElementChild.className = show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';" {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}>
+          <i class="fa-solid fa-eye" aria-hidden="true"></i>
+        </button>
+      </div>
     <!-- end password type -->
 
     <!-- secret type -->
@@ -130,7 +135,16 @@
       <input type="text" class="form-control" id="{{key}}" name="{{key}}" value="{{input_value}}" pattern="[0-9]*( )[TMG]i{0,1}B" title="Number Unit(MB, GB or TB)" {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}>
       {% else %}
 	    <!-- text type, hide fields with password -->
-      <input {% if 'password' in key %}type="password"{% else %}type="text"{% endif %} class="form-control" id="{{key}}" name="{{key}}" value="{{input_value}}" aria-describedby="help{{key}}" {% if value.required %}required{%endif%} {% if min_length %}minlength="{{min_length[0]}}"{%endif%} {% if max_length %}maxlength="{{max_length[0]}}"{%endif%} {% if value.pattern is defined %} title="{{value.pattern}}" pattern="{{value.pattern}}"{%endif%} {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}/>
+      {% if 'password' in key %}
+      <div class="input-group">
+        <input type="password" class="form-control" id="{{key}}" name="{{key}}" value="{{input_value}}" aria-describedby="help{{key}}" {% if value.required %}required{%endif%} {% if min_length %}minlength="{{min_length[0]}}"{%endif%} {% if max_length %}maxlength="{{max_length[0]}}"{%endif%} {% if value.pattern is defined %} title="{{value.pattern}}" pattern="{{value.pattern}}"{%endif%} {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}/>
+        <button type="button" class="btn btn-outline-secondary" style="border-color: var(--bs-border-color);" aria-label="Show password" aria-pressed="false" onclick="var input = this.previousElementSibling; var show = input.type === 'password'; input.type = show ? 'text' : 'password'; this.setAttribute('aria-label', show ? 'Hide password' : 'Show password'); this.setAttribute('aria-pressed', show); this.firstElementChild.className = show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';" {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}>
+          <i class="fa-solid fa-eye" aria-hidden="true"></i>
+        </button>
+      </div>
+      {% else %}
+      <input type="text" class="form-control" id="{{key}}" name="{{key}}" value="{{input_value}}" aria-describedby="help{{key}}" {% if value.required %}required{%endif%} {% if min_length %}minlength="{{min_length[0]}}"{%endif%} {% if max_length %}maxlength="{{max_length[0]}}"{%endif%} {% if value.pattern is defined %} title="{{value.pattern}}" pattern="{{value.pattern}}"{%endif%} {% if value.enabled_by is defined %}disabled data-enabled-by="{{value.enabled_by}}"{%endif%}/>
+      {% endif %}
       {% endif %}
     {% endif %}
     
