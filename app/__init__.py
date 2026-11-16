@@ -1295,21 +1295,32 @@ def create_app(oidc_blueprint=None):
                     continue
         return template
 
-    def add_ssh_keys_to_template(template):
-        for num, _, sshkey in ssh_key.get_ssh_keys(session['userid']):
+    def add_ssh_keys_to_template(template, ssh_keys):
+        """Add SSH-key application nodes and order software after them."""
+        tosca_tpl = ToscaTemplate(yaml_dict_tpl=copy.deepcopy(template))
+        node_templates = template['topology_template']['node_templates']
+        software_nodes = []
+        for node in tosca_tpl.nodetemplates:
+            root_type = utils.get_tosca_root_parent_type(node).type
+            if root_type == "tosca.nodes.SoftwareComponent":
+                software_nodes.append(node.name)
+
+        computers = [name for name, node in node_templates.items()
+                    if node["type"] in ["tosca.nodes.indigo.Compute", "tosca.nodes.Compute"]]
+
+        for num, _, sshkey in ssh_keys:
             artifact = "https://raw.githubusercontent.com/grycap/ec3/tosca/tosca/artifacts/add_ssh_key.yml"
+            ssh_node_name = "dash_ssh_key_%s" % num
+            node_templates[ssh_node_name] = {
+                "type": "tosca.nodes.ec3.Application",
+                "interfaces": {"Standard": {"configure": {"implementation": artifact,
+                                                            "inputs": {"ssh_key": sshkey}}}},
+                "requirements": [{"host": computer} for computer in computers]
+            }
 
-            computers = []
-            for node_name, node in template['topology_template']['node_templates'].items():
-                if node["type"] in ["tosca.nodes.indigo.Compute", "tosca.nodes.Compute"]:
-                    computers.append(node_name)
-
-            for computer in computers:
-                ssh_node = {"type": "tosca.nodes.ec3.Application",
-                            "interfaces": {"Standard": {"configure": {"implementation": artifact,
-                                                                      "inputs": {"ssh_key": sshkey}}}},
-                            "requirements": [{"host": computer}]}
-                template['topology_template']['node_templates']["dash_ssh_key_%s_%s" % (computer, num)] = ssh_node
+            for node_name in software_nodes:
+                requirements = node_templates[node_name].setdefault("requirements", [])
+                requirements.append({"dependency": ssh_node_name})
 
         return template
 
@@ -1415,7 +1426,7 @@ def create_app(oidc_blueprint=None):
 
         template = add_auth_to_template(template, access_token, cred_id)
 
-        template = add_ssh_keys_to_template(template)
+        template = add_ssh_keys_to_template(template, ssh_key.get_ssh_keys(session['userid']))
 
         inputs = {k: v for (k, v) in form_data.items() if not k.startswith("extra_opts.")}
 

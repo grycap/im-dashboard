@@ -1074,3 +1074,22 @@ def output_condition_matches(condition, template_inputs):
     input_name = condition[1:] if negated else condition
     input_set = input_is_set(input_name, template_inputs)
     return input_set != negated
+
+
+def get_tosca_root_parent_type(node):
+    """
+    Get the root parent type of a node (just before the tosca.nodes.Root)
+    """
+    try:
+        node_type = node.type_definition
+    except AttributeError:
+        node_type = node.definition
+
+    while True:
+        if node_type.parent_type is not None:
+            if node_type.parent_type.type.endswith(".Root"):
+                return node_type
+            else:
+                node_type = node_type.parent_type
+        else:
+            return node_type
