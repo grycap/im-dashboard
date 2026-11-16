@@ -1077,9 +1077,7 @@ def output_condition_matches(condition, template_inputs):
 
 
 def get_tosca_root_parent_type(node):
-    """
-    Get the root parent type of a node (just before the tosca.nodes.Root)
-    """
+    """Get the root parent type of a node (just before the tosca.nodes.Root)."""
     try:
         node_type = node.type_definition
     except AttributeError:
