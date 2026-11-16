@@ -637,7 +637,8 @@ class IMDashboardTests(unittest.TestCase):
         user_data.return_value = "type = InfrastructureManager; token = access_token"
         post.side_effect = self.post_response
         get_cred.return_value = {"id": "credid", "type": "fedcloud"}
-        get_ssh_keys.return_value = [(1, "desc", "ssh-rsa AAAAB3NzaC...")]
+        ssh_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0..."
+        get_ssh_keys.return_value = [(1, "desc", ssh_key)]
         get_site_info.return_value = {}, "", "vo"
         self.login(avatar)
         params = {'extra_opts.selectedImage': '',
@@ -655,6 +656,15 @@ class IMDashboardTests(unittest.TestCase):
         self.assertEqual(flash.call_count, 0)
         payload = yaml.safe_load(post.call_args_list[0][1]["data"])
         self.assertEqual([], payload["metadata"]["childs"])
+
+        artifact = "https://raw.githubusercontent.com/grycap/ec3/tosca/tosca/artifacts/add_ssh_key.yml"
+        ssh_node = {
+            "type": "tosca.nodes.ec3.Application",
+            "interfaces": {"Standard": {"configure": {"implementation": artifact,
+                                                      "inputs": {"ssh_key": ssh_key}}}},
+            "requirements": [{"host": "simple_node"}]
+        }
+        self.assertEqual(ssh_node, payload["topology_template"]["node_templates"]["dash_ssh_key_1"])
 
     @patch('app.utils.get_site_info')
     @patch("app.utils.getUserAuthData")
