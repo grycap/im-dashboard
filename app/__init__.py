@@ -1295,7 +1295,7 @@ def create_app(oidc_blueprint=None):
                     continue
         return template
 
-    def add_ssh_keys_to_template(template, ssh_keys):
+    def add_ssh_keys_to_template(template):
         """Add SSH-key application nodes and order software after them."""
         tosca_tpl = ToscaTemplate(yaml_dict_tpl=copy.deepcopy(template))
         node_templates = template['topology_template']['node_templates']
@@ -1308,7 +1308,7 @@ def create_app(oidc_blueprint=None):
         computers = [name for name, node in node_templates.items()
                     if node["type"] in ["tosca.nodes.indigo.Compute", "tosca.nodes.Compute"]]
 
-        for num, _, sshkey in ssh_keys:
+        for num, _, sshkey in ssh_key.get_ssh_keys(session['userid']):
             artifact = "https://raw.githubusercontent.com/grycap/ec3/tosca/tosca/artifacts/add_ssh_key.yml"
             ssh_node_name = "dash_ssh_key_%s" % num
             node_templates[ssh_node_name] = {
@@ -1426,7 +1426,7 @@ def create_app(oidc_blueprint=None):
 
         template = add_auth_to_template(template, access_token, cred_id)
 
-        template = add_ssh_keys_to_template(template, ssh_key.get_ssh_keys(session['userid']))
+        template = add_ssh_keys_to_template(template)
 
         inputs = {k: v for (k, v) in form_data.items() if not k.startswith("extra_opts.")}
 
