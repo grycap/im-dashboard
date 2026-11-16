@@ -603,7 +603,7 @@ class IMDashboardTests(unittest.TestCase):
             "interfaces": {"Standard": {"configure": {"implementation": artifact,
                                                       "inputs": {"ssh_key": ssh_key}}}},
             "requirements": [{"host": "simple_node"}]
-            }
+        }
         self.assertEqual(ssh_node, payload["topology_template"]["node_templates"]["dash_ssh_key_1"])
 
     @patch('app.utils.get_site_info')

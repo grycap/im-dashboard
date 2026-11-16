@@ -1306,7 +1306,7 @@ def create_app(oidc_blueprint=None):
                 software_nodes.append(node.name)
 
         computers = [name for name, node in node_templates.items()
-                    if node["type"] in ["tosca.nodes.indigo.Compute", "tosca.nodes.Compute"]]
+                     if node["type"] in ["tosca.nodes.indigo.Compute", "tosca.nodes.Compute"]]
 
         for num, _, sshkey in ssh_key.get_ssh_keys(session['userid']):
             artifact = "https://raw.githubusercontent.com/grycap/ec3/tosca/tosca/artifacts/add_ssh_key.yml"
@@ -1314,7 +1314,7 @@ def create_app(oidc_blueprint=None):
             node_templates[ssh_node_name] = {
                 "type": "tosca.nodes.ec3.Application",
                 "interfaces": {"Standard": {"configure": {"implementation": artifact,
-                                                            "inputs": {"ssh_key": sshkey}}}},
+                                                          "inputs": {"ssh_key": sshkey}}}},
                 "requirements": [{"host": computer} for computer in computers]
             }
 
@@ -1874,7 +1874,7 @@ def create_app(oidc_blueprint=None):
             app.logger.warning("Error writing OTT token: %s" % ex)
 
         expires = int(oidc_blueprint.session.token["expires_in"])
-        token_btn = f'Copy your token to share (expires in { expires } secs): '
+        token_btn = f'Copy your token to share (expires in {expires} secs): '
         token_btn += ('<a class="btn btn-outline-success btn-sm" id="copyTokenBtn" ' +
                       'onclick="navigator.clipboard.writeText(\'' + token +
                       '\')"><i class="fa fa-copy"></i> Copy</a>')
